@@ -42,19 +42,29 @@ El sistema gestiona el proceso de inscripción de vehículos nuevos (formulario 
 ### Librerías clave
 
 ```
-Backend:
-  express          — servidor HTTP
-  mssql            — conexión a SQL Server existente
-  multer           — recepción de archivos Excel
-  xlsx (SheetJS)   — parseo de columnas A–U
-  soap (node-soap) — cliente SOAP para TRGS WS
-  pdfkit / exceljs — generación de remitos
-
-Frontend:
-  react + vite     — SPA del operador
-  axios            — cliente HTTP
-  react-router-dom — navegación
-  zustand          — estado global
+Backend (Node.js + TypeScript):
+  express + @types/express     servidor HTTP
+  mssql + @types/mssql         conexión SQL Server existente
+  multer + @types/multer        recepción archivo Excel (multipart/form-data)
+  xlsx                         SheetJS — parseo Excel server-side en Node
+  soap                         node-soap — cliente SOAP para TRGS WS
+  pdfkit                       generación PDF remitos
+  exceljs                      generación Excel remitos
+  tsx / ts-node                ejecución TypeScript en desarrollo
+  typescript
+ 
+Frontend (React + Vite + TypeScript):
+  react + vite
+  typescript
+  axios                        cliente HTTP
+  react-router-dom + @types
+  zustand                      estado global
+  tailwindcss                  utilidades CSS
+  shadcn/ui                    componentes base (Button, Input, Table, Badge, Toast, Dialog, Select)
+  lucide-react                 iconografía
+ 
+Compartido:
+  /shared/types                interfaces trgDatosTramite, GestorTramite, etc.
 ```
 
 ---

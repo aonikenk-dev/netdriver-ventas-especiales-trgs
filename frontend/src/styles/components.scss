@@ -1,0 +1,245 @@
+﻿@use 'sass:color';
+@use 'variables' as *;
+
+.upload-zone {
+  border: 1px dashed $color-border;
+  border-radius: $radius;
+  background-color: $color-carbon;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  cursor: pointer;
+
+  &:hover,
+  &--active {
+    border-color: $color-sienna;
+    background-color: $color-slate;
+  }
+
+  &__icon {
+    color: $color-ice;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  &__hint {
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: rgba($color-ink, 0.45);
+  }
+}
+
+.status-badge {
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+
+  &--pendiente {
+    background-color: rgba($color-ice, 0.14);
+    color: color.adjust($color-ice, $lightness: -28%);
+    border: 1px solid rgba($color-ice, 0.4);
+  }
+
+  &--enviando {
+    background-color: rgba($color-ice, 0.14);
+    color: color.adjust($color-ice, $lightness: -28%);
+    border: 1px solid rgba($color-ice, 0.4);
+    animation: pulse-soft 1.4s ease-in-out infinite;
+  }
+
+  &--ok {
+    background-color: rgba($color-moss, 0.14);
+    color: color.adjust($color-moss, $lightness: -8%);
+    border: 1px solid rgba($color-moss, 0.4);
+  }
+
+  &--error {
+    background-color: rgba($color-sienna, 0.14);
+    color: color.adjust($color-sienna, $lightness: -10%);
+    border: 1px solid rgba($color-sienna, 0.4);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th {
+    text-align: left;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba($color-ink, 0.45);
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid $color-border;
+  }
+
+  td {
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid $color-border;
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background-color 0.12s ease;
+
+    &:hover {
+      background-color: $color-carbon;
+    }
+  }
+
+  &__chasis {
+    font-family: $font-mono;
+    font-size: 0.78rem;
+    color: rgba($color-ink, 0.85);
+  }
+
+  &__num-input {
+    width: 7.5rem;
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  &__title {
+    font-size: 1.4rem;
+  }
+
+  &__subtitle {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: rgba($color-ink, 0.5);
+  }
+}
+
+.section-card {
+  background-color: $color-carbon;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  padding: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+
+  &__hint {
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: rgba($color-ink, 0.45);
+  }
+}
+
+.upload-card {
+  margin-bottom: 1.5rem;
+}
+
+.table-empty {
+  text-align: center;
+  color: rgba($color-ink, 0.4);
+  padding: 1.5rem 0;
+}
+
+.cell-mono {
+  font-family: $font-mono;
+  font-size: 0.78rem;
+}
+
+.cell-error {
+  color: $color-sienna;
+}
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.doc-card {
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  background-color: $color-carbon;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  &__icon {
+    color: $color-ice;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  &__meta {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: rgba($color-ink, 0.45);
+  }
+}
+
+.remitos-section-title {
+  font-size: 1rem;
+  margin: 1.75rem 0 0.85rem;
+}
+
+.remito-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.remito-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  background-color: $color-carbon;
+  padding: 0.9rem 1.1rem;
+
+  &__numero {
+    font-family: $font-mono;
+    font-weight: 500;
+  }
+
+  &__meta {
+    font-size: 0.78rem;
+    color: rgba($color-ink, 0.5);
+  }
+
+  &__links {
+    display: flex;
+    gap: 0.5rem;
+  }
+}

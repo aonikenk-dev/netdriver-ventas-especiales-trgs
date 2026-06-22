@@ -1,0 +1,111 @@
+﻿@use 'variables' as *;
+
+.app-shell {
+  display: grid;
+  grid-template-columns: $sidebar-width 1fr;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  border-right: 1px solid $color-border;
+  background-color: $color-carbon;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  &__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__brand-title {
+    font-family: $font-display;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  &__brand-logo {
+    max-width: 75%;
+    height: auto;
+  }
+
+  &__brand-sub {
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: rgba($color-ink, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.app-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: $radius;
+  color: rgba($color-ink, 0.6);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-left: 2px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: $color-slate;
+    color: $color-ink;
+  }
+
+  &--active {
+    background-color: $color-slate;
+    color: $color-ink;
+    border-left-color: $color-sienna;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-topbar {
+  height: $topbar-height;
+  border-bottom: 1px solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+
+  &__title {
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  &__meta {
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: rgba($color-ink, 0.45);
+  }
+}
+
+.app-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1180px;
+}
