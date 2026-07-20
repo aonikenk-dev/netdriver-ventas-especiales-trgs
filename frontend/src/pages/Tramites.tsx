@@ -7,13 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTramitesStore } from '@/store/useTramitesStore';
-import type { EstadoTramite } from '@shared/types';
+import type { EstadoTramite, CodigoClase } from '@shared/types';
 
 const ESTADO_LABEL: Record<EstadoTramite, string> = {
   pendiente: 'Pendiente',
   enviando: 'Enviando...',
   ok: 'OK',
   error: 'Error',
+};
+
+const NI_LABEL: Record<CodigoClase, string> = {
+  6801: 'Nacional',
+  6802: 'Importado',
 };
 
 export function Tramites() {
@@ -87,8 +92,8 @@ export function Tramites() {
             <TableRow>
               <TableHead></TableHead>
               <TableHead>Chasis</TableHead>
-              <TableHead>Vehiculo</TableHead>
               <TableHead>Titular</TableHead>
+              <TableHead>N/I</TableHead>
               <TableHead>Form. 01</TableHead>
               <TableHead>Form. 12</TableHead>
               <TableHead>Estado</TableHead>
@@ -107,10 +112,10 @@ export function Tramites() {
                   />
                 </TableCell>
                 <TableCell className="data-table__chasis">{t.auto.nroChasis}</TableCell>
-                <TableCell>
-                  {t.auto.marcaChasis} {t.auto.modelo}
-                </TableCell>
                 <TableCell>{t.titular.nombre}</TableCell>
+                <TableCell>
+                  <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge>
+                </TableCell>
                 <TableCell>
                   <Input
                     className="data-table__num-input"
