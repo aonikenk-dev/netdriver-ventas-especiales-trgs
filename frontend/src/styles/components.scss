@@ -161,6 +161,24 @@
     font-size: 0.75rem;
     color: rgba($color-ink, 0.45);
   }
+
+  &__select-all {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: $font-mono;
+    font-size: 0.78rem;
+    color: rgba($color-ink, 0.65);
+    cursor: pointer;
+    user-select: none;
+
+    input[type='checkbox'] {
+      accent-color: $color-sienna;
+      width: 0.9rem;
+      height: 0.9rem;
+      cursor: pointer;
+    }
+  }
 }
 
 .upload-card {
@@ -268,9 +286,35 @@
     gap: 0.4rem;
     flex-wrap: wrap;
   }
+
+  &--selected {
+    border-color: rgba($color-sienna, 0.45);
+    background-color: rgba($color-sienna, 0.06);
+  }
+
+  &__check {
+    accent-color: $color-sienna;
+    width: 0.9rem;
+    height: 0.9rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
 }
 
 // --- Vista tabla Documentos ---
+
+.th-check {
+  accent-color: $color-sienna;
+  width: 0.9rem;
+  height: 0.9rem;
+  cursor: pointer;
+  display: block;
+}
+
+.table-row--selected td {
+  background-color: rgba($color-sienna, 0.07);
+}
 
 .docs-toolbar {
   display: flex;
@@ -328,6 +372,34 @@
   background-color: $color-carbon;
   padding: 0.9rem 1.1rem;
 
+  &--generado {
+    gap: 0.75rem;
+  }
+
+  &__clickable {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    border-radius: $radius;
+    transition: color 0.12s ease;
+
+    &:hover {
+      color: $color-ice;
+    }
+  }
+
+  &__chevron {
+    color: rgba($color-ink, 0.35);
+    flex-shrink: 0;
+  }
+
   &__numero {
     font-family: $font-mono;
     font-weight: 500;
@@ -341,6 +413,40 @@
   &__links {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
+  }
+}
+
+// --- Modal Remito ---
+
+.modal-remito {
+  &__title {
+    font-family: $font-display;
+    font-size: 1.1rem;
+  }
+
+  &__table-wrapper {
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    margin-top: 0.75rem;
+  }
+
+  &__num {
+    font-family: $font-mono;
+    color: rgba($color-ink, 0.4);
+    font-size: 0.78rem;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid $color-border;
   }
 }
 

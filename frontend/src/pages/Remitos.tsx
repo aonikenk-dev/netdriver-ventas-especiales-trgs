@@ -1,19 +1,32 @@
-import { useEffect, useState } from 'react';
-import { FileDown, FileSpreadsheet } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronRight, FileDown, FileSpreadsheet } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
+import { ModalRemito } from '@/components/ModalRemito';
 import { useTramitesStore } from '@/store/useTramitesStore';
 import { useRemitosStore } from '@/store/useRemitosStore';
+import type { Remito } from '@shared/types';
 
 export function Remitos() {
   const { tramitesImpresos, removerImpresos } = useTramitesStore();
   const { remitos, generando, fetchRemitos, crearRemito } = useRemitosStore();
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
+  const [modalRemito, setModalRemito] = useState<Remito | null>(null);
+  const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchRemitos();
   }, [fetchRemitos]);
+
+  const todosSeleccionados = tramitesImpresos.length > 0 && tramitesImpresos.every((t) => seleccion.has(t.id));
+  const algunosSeleccionados = tramitesImpresos.some((t) => seleccion.has(t.id));
+
+  useEffect(() => {
+    if (checkboxAllRef.current) {
+      checkboxAllRef.current.indeterminate = algunosSeleccionados && !todosSeleccionados;
+    }
+  }, [algunosSeleccionados, todosSeleccionados]);
 
   const toggle = (id: number) => {
     setSeleccion((prev) => {
@@ -22,6 +35,14 @@ export function Remitos() {
       else next.add(id);
       return next;
     });
+  };
+
+  const toggleTodos = () => {
+    if (todosSeleccionados) {
+      setSeleccion(new Set());
+    } else {
+      setSeleccion(new Set(tramitesImpresos.map((t) => t.id)));
+    }
   };
 
   const handleGenerar = async () => {
@@ -56,7 +77,17 @@ export function Remitos() {
             <Button onClick={handleGenerar} disabled={seleccion.size === 0 || generando}>
               {generando ? 'Generando...' : `Generar remito (${seleccion.size})`}
             </Button>
-            <span className="toolbar__hint">{tramitesImpresos.length} tramite(s) impresos disponibles para remito</span>
+            <span className="toolbar__hint">{tramitesImpresos.length} tramite(s) impresos disponibles</span>
+            <label className="toolbar__select-all">
+              <input
+                type="checkbox"
+                ref={checkboxAllRef}
+                checked={todosSeleccionados}
+                disabled={tramitesImpresos.length === 0}
+                onChange={toggleTodos}
+              />
+              Seleccionar todos
+            </label>
           </div>
 
           <div className="remito-list">
@@ -85,11 +116,15 @@ export function Remitos() {
         <h2 className="remitos-section-title">Remitos generados</h2>
         <div className="remito-list">
           {remitos.map((r) => (
-            <div key={r.id} className="remito-item">
-              <span>
+            <div key={r.id} className="remito-item remito-item--generado">
+              <button
+                className="remito-item__clickable"
+                onClick={() => setModalRemito(r)}
+              >
                 <span className="remito-item__numero">{r.numero}</span>
-                <span className="remito-item__meta"> &mdash; {r.tramiteIds.length} tramite(s)</span>
-              </span>
+                <span className="remito-item__meta">{r.tramites?.length ?? r.tramiteIds.length} trámite(s)</span>
+                <ChevronRight size={13} className="remito-item__chevron" />
+              </button>
               <span className="remito-item__links">
                 <Button size="sm" variant="outline" onClick={() => window.open(`${apiBase}${r.pdfUrl}`, '_blank')}>
                   <FileDown size={14} /> PDF
@@ -103,6 +138,8 @@ export function Remitos() {
           {remitos.length === 0 && <div className="table-empty">Todavia no se generaron remitos.</div>}
         </div>
       </div>
+
+      <ModalRemito remito={modalRemito} onClose={() => setModalRemito(null)} />
     </>
   );
 }

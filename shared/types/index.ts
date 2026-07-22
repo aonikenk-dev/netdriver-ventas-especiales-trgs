@@ -155,10 +155,24 @@ export interface TrgTramiteRespuesta extends TrgRespuesta {
   traID: string;
 }
 
+export interface RemitoTramite {
+  id: number;
+  nroChasis: string;
+  marcaChasis: string;
+  modelo: string;
+  titular: string;
+  cuit: string;
+  traID: string | null;
+  certificadoFabrica: string | null;
+  formularioNro01: string | null;
+  formularioNro12: string | null;
+}
+
 export interface Remito {
   id: number;
   numero: string;
   tramiteIds: number[];
+  tramites: RemitoTramite[];
   creadoEn: string;
   pdfUrl: string;
   excelUrl: string;

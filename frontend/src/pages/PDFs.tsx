@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, FileCheck, LayoutGrid, Loader2, Printer, Table2 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
@@ -61,6 +61,9 @@ export function PDFs() {
   const [totalPages, setTotalPages] = useState(1);
   const [cargando, setCargando] = useState<Set<string>>(new Set());
   const [marcandoImpreso, setMarcandoImpreso] = useState<Set<number>>(new Set());
+  const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
+  const [marcandoLote, setMarcandoLote] = useState(false);
+  const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   const setKey = (key: string, on: boolean) =>
     setCargando((prev) => {
@@ -76,6 +79,11 @@ export function PDFs() {
       setTramites(r.tramites);
       setTotal(r.total);
       setTotalPages(r.totalPages);
+      // Limpiar selección de tramites que ya no están en la página
+      setSeleccion((prev) => {
+        const ids = new Set(r.tramites.map((t) => t.id));
+        return new Set([...prev].filter((id) => ids.has(id)));
+      });
     } finally {
       setLoading(false);
     }
@@ -83,10 +91,38 @@ export function PDFs() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
+  const todosSeleccionados = tramites.length > 0 && tramites.every((t) => seleccion.has(t.id));
+  const algunosSeleccionados = tramites.some((t) => seleccion.has(t.id));
+  const seleccionNoImpreso = tramites.filter((t) => seleccion.has(t.id) && !t.impreso);
+
+  useEffect(() => {
+    if (checkboxAllRef.current) {
+      checkboxAllRef.current.indeterminate = algunosSeleccionados && !todosSeleccionados;
+    }
+  }, [algunosSeleccionados, todosSeleccionados]);
+
+  const toggleDoc = (id: number) => {
+    setSeleccion((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleTodos = () => {
+    if (todosSeleccionados) {
+      setSeleccion(new Set());
+    } else {
+      setSeleccion(new Set(tramites.map((t) => t.id)));
+    }
+  };
+
   const cambiarVista = (mode: ViewMode) => {
     setViewMode(mode);
     setPageSize(mode === 'grid' ? 12 : 10);
     setPage(1);
+    setSeleccion(new Set());
   };
 
   const imprimirWsDoc = async (tramiteId: number, tipo: TipoFormularioDescarga) => {
@@ -154,6 +190,22 @@ export function PDFs() {
     }
   };
 
+  const handleMarcarImpresoLote = async () => {
+    const ids = seleccionNoImpreso.map((t) => t.id);
+    if (ids.length === 0) return;
+    setMarcandoLote(true);
+    try {
+      await Promise.all(ids.map((id) => marcarImpresoStore(id)));
+      setTramites((prev) => prev.map((t) => ids.includes(t.id) ? { ...t, impreso: true } : t));
+      toast.success(`${ids.length} trámite(s) marcados como impresos. Ya están disponibles en Remitos.`);
+      setSeleccion(new Set());
+    } catch {
+      toast.error('No se pudieron marcar todos como impresos');
+    } finally {
+      setMarcandoLote(false);
+    }
+  };
+
   const emptyMsg = 'Todavía no hay trámites con estado OK para mostrar documentos.';
 
   return (
@@ -171,7 +223,20 @@ export function PDFs() {
 
         {/* Toolbar */}
         <div className="docs-toolbar">
-          <span className="tramites-filters__label">{total} trámite(s) con documentos</span>
+          {seleccion.size > 0 && seleccionNoImpreso.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={marcandoLote}
+              onClick={handleMarcarImpresoLote}
+            >
+              {marcandoLote
+                ? <Loader2 size={13} className="modal-docs__spinner" />
+                : <FileCheck size={13} />}
+              Marcar impresos ({seleccionNoImpreso.length})
+            </Button>
+          )}
+          <span className="tramites-filters__label">{total} trámite(s)</span>
           <div className="tramites-filters__spacer" />
           <span className="tramites-filters__label">Por página:</span>
           <select
@@ -212,15 +277,21 @@ export function PDFs() {
               const busy = (tipo: string) => cargando.has(`${t.id}-${tipo}`);
 
               return (
-                <div key={t.id} className="doc-card">
+                <div key={t.id} className={`doc-card${seleccion.has(t.id) ? ' doc-card--selected' : ''}`}>
                   <div className="doc-card__header">
+                    <input
+                      type="checkbox"
+                      className="doc-card__check"
+                      checked={seleccion.has(t.id)}
+                      onChange={() => toggleDoc(t.id)}
+                    />
                     <div className="doc-card__info">
                       <span className="doc-card__title">
-                        {t.auto.marcaChasis} {t.auto.modelo}
+                        {t.auto.nroChasis}
                       </span>
-                      <span className="doc-card__meta">{t.auto.nroChasis}</span>
+                      <span className="doc-card__meta">{t.auto.marcaChasis} {t.auto.modelo}</span>
                     </div>
-                    <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge>
+                    {/* <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge> */}
                   </div>
 
                   <div className="doc-card__actions-row">
@@ -313,6 +384,15 @@ export function PDFs() {
             <Table className="docs-table">
               <TableHeader>
                 <TableRow>
+                  <TableHead>
+                    <input
+                      type="checkbox"
+                      className="th-check"
+                      ref={checkboxAllRef}
+                      checked={todosSeleccionados}
+                      onChange={toggleTodos}
+                    />
+                  </TableHead>
                   <TableHead>Chasis</TableHead>
                   <TableHead>Marca / Modelo</TableHead>
                   <TableHead>Titular</TableHead>
@@ -346,7 +426,14 @@ export function PDFs() {
                     </Button>
                   );
                   return (
-                    <TableRow key={t.id}>
+                    <TableRow key={t.id} className={seleccion.has(t.id) ? 'table-row--selected' : ''}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={seleccion.has(t.id)}
+                          onChange={() => toggleDoc(t.id)}
+                        />
+                      </TableCell>
                       <TableCell className="data-table__chasis">{t.auto.nroChasis}</TableCell>
                       <TableCell>{t.auto.marcaChasis} {t.auto.modelo}</TableCell>
                       <TableCell>{t.titular.nombre}</TableCell>
@@ -372,7 +459,7 @@ export function PDFs() {
                         {iconPrint('factura', () => imprimirLocalDoc(t.id, 'factura', t.auto.nroChasis))}
                       </TableCell>
                       <TableCell>
-                        <Button size="sm"  disabled={busy('bundle')} onClick={() => imprimirBundle(t.id)} title="Imprimir todos salvo los forms 01 y 12">
+                        <Button size="sm" disabled={busy('bundle')} onClick={() => imprimirBundle(t.id)} title="Imprimir todos salvo los forms 01 y 12">
                           {busy('bundle')
                             ? <Loader2 size={13} className="modal-docs__spinner" />
                             : <Printer size={13} />}
@@ -397,7 +484,7 @@ export function PDFs() {
                 })}
                 {tramites.length === 0 && !loading && (
                   <TableRow>
-                    <TableCell colSpan={12} className="table-empty">{emptyMsg}</TableCell>
+                    <TableCell colSpan={13} className="table-empty">{emptyMsg}</TableCell>
                   </TableRow>
                 )}
               </TableBody>

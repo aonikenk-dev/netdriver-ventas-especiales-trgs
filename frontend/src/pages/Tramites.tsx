@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
   Printer, AlertCircle, FileCheck, Loader2,
@@ -71,6 +71,8 @@ export function Tramites() {
   const [modalDocs, setModalDocs] = useState<GestorTramite | null>(null);
   const [modalLogs, setModalLogs] = useState<GestorTramite | null>(null);
   const [marcandoImpreso, setMarcandoImpreso] = useState<Set<number>>(new Set());
+  const [marcandoLote, setMarcandoLote] = useState(false);
+  const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchTramites();
@@ -86,10 +88,22 @@ export function Tramites() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const seleccionables = useMemo(
-    () => tramites.filter((t) => t.estado === 'pendiente'),
-    [tramites]
-  );
+  // Tramites seleccionables en la página actual (excluye los que están en proceso)
+  const elegibles = useMemo(() => tramites.filter((t) => t.estado !== 'enviando'), [tramites]);
+  const seleccionadosTramites = useMemo(() => tramites.filter((t) => seleccion.has(t.id)), [tramites, seleccion]);
+  const seleccionPendiente = useMemo(() => seleccionadosTramites.filter((t) => t.estado === 'pendiente'), [seleccionadosTramites]);
+  const seleccionables = useMemo(() => tramites.filter((t) => t.estado === 'pendiente'), [tramites]);
+  const seleccionablesParaImprimir = useMemo(() => tramites.filter((t) => t.estado === 'ok' && !t.impreso), [tramites]);
+
+  const todosSeleccionados = elegibles.length > 0 && elegibles.every((t) => seleccion.has(t.id));
+  const algunosSeleccionados = elegibles.some((t) => seleccion.has(t.id));
+  const seleccionOkNoImpresos = seleccionadosTramites.filter((t) => t.estado === 'ok' && !t.impreso);
+
+  useEffect(() => {
+    if (checkboxAllRef.current) {
+      checkboxAllRef.current.indeterminate = algunosSeleccionados && !todosSeleccionados;
+    }
+  }, [algunosSeleccionados, todosSeleccionados]);
 
   const toggle = (id: number) => {
     setSeleccion((prev) => {
@@ -98,6 +112,18 @@ export function Tramites() {
       else next.add(id);
       return next;
     });
+  };
+
+  const toggleTodos = () => {
+    if (todosSeleccionados) {
+      setSeleccion((prev) => {
+        const next = new Set(prev);
+        elegibles.forEach((t) => next.delete(t.id));
+        return next;
+      });
+    } else {
+      setSeleccion((prev) => new Set([...prev, ...elegibles.map((t) => t.id)]));
+    }
   };
 
   const handleImport = async (file: File) => {
@@ -113,9 +139,10 @@ export function Tramites() {
   };
 
   const handleEnviar = async () => {
-    if (seleccion.size === 0) return;
+    const ids = seleccionPendiente.map((t) => t.id);
+    if (ids.length === 0) return;
     try {
-      await enviarAlWs([...seleccion]);
+      await enviarAlWs(ids);
       toast.success('Tramites enviados a TRGS (mock)');
       setSeleccion(new Set());
     } catch {
@@ -145,6 +172,21 @@ export function Tramites() {
     }
   };
 
+  const handleMarcarImpresoLote = async () => {
+    const ids = seleccionOkNoImpresos.map((t) => t.id);
+    if (ids.length === 0) return;
+    setMarcandoLote(true);
+    try {
+      await Promise.all(ids.map((id) => marcarImpreso(id)));
+      toast.success(`${ids.length} trámite(s) marcados como impresos. Ya están disponibles en Remitos.`);
+      setSeleccion(new Set());
+    } catch {
+      toast.error('No se pudieron marcar todos como impresos');
+    } finally {
+      setMarcandoLote(false);
+    }
+  };
+
   return (
     <>
       <Topbar title="Tramites" />
@@ -163,10 +205,22 @@ export function Tramites() {
         </div>
 
         <div className="toolbar">
-          <Button onClick={handleEnviar} disabled={seleccion.size === 0 || enviando}>
-            {enviando ? 'Enviando...' : `Enviar SUATS (${seleccion.size})`}
+          <Button onClick={handleEnviar} disabled={seleccionPendiente.length === 0 || enviando}>
+            {enviando ? 'Enviando...' : `Enviar SUATS (${seleccionPendiente.length})`}
           </Button>
           <span className="toolbar__hint">{seleccionables.length} pendiente(s) en esta pagina</span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={seleccionOkNoImpresos.length === 0 || marcandoLote}
+              onClick={handleMarcarImpresoLote}
+            >
+              {marcandoLote
+                ? <Loader2 size={13} className="modal-docs__spinner" />
+                : <FileCheck size={13} />}
+              Marcar impresos ({seleccionOkNoImpresos.length})
+            </Button>
+            <span className="toolbar__hint">{seleccionablesParaImprimir.length} pendiente(s) en esta pagina</span>
         </div>
 
         <div className="tramites-filters">
@@ -222,7 +276,15 @@ export function Tramites() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead></TableHead>
+              <TableHead>
+                <input
+                  type="checkbox"
+                  className="th-check"
+                  ref={checkboxAllRef}
+                  checked={todosSeleccionados}
+                  onChange={toggleTodos}
+                />
+              </TableHead>
               <SortableTh field="chasis" filters={filters} onSort={handleSort}>Chasis</SortableTh>
               <SortableTh field="titular" filters={filters} onSort={handleSort}>Titular</SortableTh>
               <TableHead>N/I</TableHead>
@@ -240,7 +302,7 @@ export function Tramites() {
                   <input
                     type="checkbox"
                     checked={seleccion.has(t.id)}
-                    disabled={t.estado !== 'pendiente'}
+                    disabled={t.estado === 'enviando'}
                     onChange={() => toggle(t.id)}
                   />
                 </TableCell>

@@ -196,5 +196,5 @@ export function findTramite(id: number): GestorTramite | undefined {
 
 export function nextRemitoNumero(): { id: number; numero: string } {
   const id = nextRemitoId++;
-  return { id, numero: `REM-${String(id).padStart(6, '0')}` };
+  return { id, numero: `RTO-${String(id).padStart(6, '0')}` };
 }
