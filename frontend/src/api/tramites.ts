@@ -1,4 +1,4 @@
-import type { ExcelImportResult, GestorTramite, Remito } from '@shared/types';
+import type { ExcelImportResult, GestorTramite, Remito, TramiteListParams, TramiteListResult } from '@shared/types';
 import { apiClient } from './client';
 
 export async function importarExcel(file: File): Promise<ExcelImportResult> {
@@ -8,9 +8,9 @@ export async function importarExcel(file: File): Promise<ExcelImportResult> {
   return data;
 }
 
-export async function listarTramites(): Promise<GestorTramite[]> {
-  const { data } = await apiClient.get<{ tramites: GestorTramite[] }>('/api/tramites');
-  return data.tramites;
+export async function listarTramites(params?: TramiteListParams): Promise<TramiteListResult> {
+  const { data } = await apiClient.get<TramiteListResult>('/api/tramites', { params });
+  return data;
 }
 
 export async function actualizarFormularios(

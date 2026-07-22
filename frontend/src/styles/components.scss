@@ -243,3 +243,300 @@
     gap: 0.5rem;
   }
 }
+
+// --- Filtros de tabla ---
+
+.tramites-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+
+  &__search {
+    flex: 1;
+    min-width: 12rem;
+    max-width: 22rem;
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__label {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: rgba($color-ink, 0.45);
+    white-space: nowrap;
+  }
+
+  &__select {
+    font-family: $font-mono;
+    font-size: 0.78rem;
+    color: $color-ink;
+    background-color: $color-carbon;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    padding: 0.35rem 0.6rem;
+    cursor: pointer;
+    outline: none;
+
+    &:focus {
+      border-color: $color-sienna;
+    }
+  }
+}
+
+// --- Headers ordenables ---
+
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: $color-ink;
+  }
+
+  &--active {
+    color: $color-ink;
+  }
+
+  &__inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+}
+
+// --- Columna Acciones ---
+
+.actions-cell {
+  display: flex;
+  gap: 0.35rem;
+}
+
+// --- Paginación ---
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 0 0.5rem;
+
+  &__info {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: rgba($color-ink, 0.5);
+  }
+}
+
+// --- Modal Documentos ---
+
+.modal-docs {
+  &__tra-id {
+    font-family: $font-mono;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.7rem;
+    background-color: rgba($color-sienna, 0.05);
+    border: 1px solid rgba($color-sienna, 0.2);
+    border-radius: $radius;
+    margin-bottom: 0.85rem;
+    margin-top: 0.85rem;
+  }
+
+  &__actions-hint {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    color: rgba($color-ink, 0.4);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+  }
+
+  &__section-label {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba($color-ink, 0.4);
+    margin-top: 0.25rem;
+    margin-bottom: 0.15rem;
+
+    &--mt {
+      margin-top: 0.85rem;
+    }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    background-color: $color-obsidian;
+  }
+
+  &__item-icon {
+    color: $color-ice;
+    flex-shrink: 0;
+  }
+
+  &__item-label {
+    flex: 1;
+    font-size: 0.83rem;
+  }
+
+  &__item-actions {
+    display: flex;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  &__spinner {
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// --- Modal Logs ---
+
+.log-error-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  background-color: rgba($color-sienna, 0.08);
+  border: 1px solid rgba($color-sienna, 0.3);
+  border-radius: $radius;
+  margin-bottom: 0.75rem;
+
+  &__icon {
+    color: $color-sienna;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  &__text {
+    font-size: 0.82rem;
+    color: color.adjust($color-sienna, $lightness: -10%);
+    line-height: 1.45;
+  }
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 22rem;
+  overflow-y: auto;
+
+  &__empty {
+    font-size: 0.83rem;
+    color: rgba($color-ink, 0.4);
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+}
+
+.log-entry {
+  padding: 0.6rem 0.8rem;
+  border-radius: $radius;
+  border-left: 3px solid transparent;
+
+  &--info {
+    background-color: rgba($color-ice, 0.07);
+    border-left-color: rgba($color-ice, 0.5);
+  }
+
+  &--warning {
+    background-color: rgba($color-sienna, 0.06);
+    border-left-color: rgba($color-sienna, 0.4);
+  }
+
+  &--error {
+    background-color: rgba($color-sienna, 0.1);
+    border-left-color: $color-sienna;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.3rem;
+  }
+
+  &__nivel-icon {
+    flex-shrink: 0;
+
+    &--info    { color: $color-ice; }
+    &--warning { color: color.adjust($color-sienna, $lightness: 8%); }
+    &--error   { color: $color-sienna; }
+  }
+
+  &__operacion {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    background-color: rgba($color-ink, 0.07);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.2rem;
+  }
+
+  &__timestamp {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    color: rgba($color-ink, 0.35);
+    margin-left: auto;
+  }
+
+  &__fuente {
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.2rem;
+
+    &--netdriver {
+      background-color: rgba($color-moss, 0.15);
+      color: color.adjust($color-moss, $lightness: -8%);
+    }
+
+    &--trgs {
+      background-color: rgba($color-ice, 0.15);
+      color: color.adjust($color-ice, $lightness: -20%);
+    }
+  }
+
+  &__mensaje {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  &__detalle {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    color: rgba($color-ink, 0.45);
+    background-color: rgba($color-ink, 0.04);
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.2rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}

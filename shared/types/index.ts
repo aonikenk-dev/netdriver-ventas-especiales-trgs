@@ -3,6 +3,15 @@ export type EstadoTramite = 'pendiente' | 'enviando' | 'ok' | 'error';
 
 export type CodigoClase = 6801 | 6802; // 6801 nacional, 6802 importado
 
+export interface TramiteLog {
+  timestamp: string;
+  nivel: 'info' | 'warning' | 'error';
+  operacion: 'eco' | 'abrir_sesion' | 'generar_tramite_01' | 'cerrar_sesion' | 'interno';
+  mensaje: string;
+  detalle?: string;
+  fuenteMensaje?: 'netdriver' | 'trgs';
+}
+
 export interface GestorAuto {
   id: number;
   facturaNro: string;
@@ -56,6 +65,7 @@ export interface GestorTramite {
   formularioNro01: string | null;
   formularioNro12: string | null;
   formularios: GestorFormulario[];
+  logs: TramiteLog[];
   creadoEn: string;
 }
 
@@ -67,6 +77,24 @@ export interface ExcelImportRowError {
 export interface ExcelImportResult {
   tramites: Omit<GestorTramite, 'id'>[];
   errores: ExcelImportRowError[];
+}
+
+export interface TramiteListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  estado?: EstadoTramite | 'all';
+  ni?: 'all' | '6801' | '6802';
+  sortBy?: 'creadoEn' | 'chasis' | 'titular' | 'estado';
+  sortDir?: 'asc' | 'desc';
+}
+
+export interface TramiteListResult {
+  tramites: GestorTramite[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface TrgDatosTramite {

@@ -80,6 +80,7 @@ export function parseExcelBuffer(buffer: Buffer): ExcelImportResult {
       formularioNro01: null,
       formularioNro12: null,
       formularios: [],
+      logs: [],
       creadoEn: new Date().toISOString(),
     });
   });
