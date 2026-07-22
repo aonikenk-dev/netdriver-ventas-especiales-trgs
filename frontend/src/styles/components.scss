@@ -413,6 +413,70 @@
   to { transform: rotate(360deg); }
 }
 
+// --- Modal Error Excel ---
+
+.modal-error-excel {
+  &__motivo {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.65rem 0.8rem;
+    background-color: rgba($color-sienna, 0.08);
+    border: 1px solid rgba($color-sienna, 0.25);
+    border-radius: $radius;
+    margin-bottom: 1rem;
+
+    p {
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: color.adjust($color-sienna, $lightness: -10%);
+    }
+  }
+
+  &__motivo-icon {
+    color: $color-sienna;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  &__label {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba($color-ink, 0.4);
+    margin-bottom: 0.5rem;
+  }
+
+  &__datos {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.3rem 1.25rem;
+    padding: 0.6rem 0.75rem;
+    background-color: $color-obsidian;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+
+    dt {
+      font-family: $font-mono;
+      font-size: 0.72rem;
+      color: rgba($color-ink, 0.45);
+      white-space: nowrap;
+    }
+
+    dd {
+      font-family: $font-mono;
+      font-size: 0.78rem;
+    }
+  }
+
+  &__no-datos {
+    font-size: 0.82rem;
+    color: rgba($color-ink, 0.4);
+    font-style: italic;
+  }
+}
+
 // --- Modal Logs ---
 
 .log-error-summary {

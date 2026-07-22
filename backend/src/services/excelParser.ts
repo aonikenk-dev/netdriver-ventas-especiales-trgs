@@ -47,7 +47,17 @@ export function parseExcelBuffer(buffer: Buffer): ExcelImportResult {
     // R,S,T,U: ignorar
 
     if (!facturaNro || !nroChasis || !nombreTitular || !cuit) {
-      errores.push({ fila: numeroFila, motivo: 'Faltan campos obligatorios (factura, chasis, titular o CUIT)' });
+      errores.push({
+        fila: numeroFila,
+        motivo: 'Faltan campos obligatorios (factura, chasis, titular o CUIT)',
+        datos: {
+          facturaNro: facturaNro || undefined,
+          chasis: nroChasis || undefined,
+          titular: nombreTitular || undefined,
+          cuit: cuit || undefined,
+          codFabrica: codFabrica || undefined,
+        },
+      });
       return;
     }
 

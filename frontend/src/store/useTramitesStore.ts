@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { EstadoTramite, GestorTramite } from '@shared/types';
+import type { EstadoTramite, ExcelImportRowError, GestorTramite } from '@shared/types';
 import {
   actualizarFormularios,
   enviarSuats,
@@ -30,6 +30,7 @@ interface TramitesState {
   enviando: boolean;
   pagination: PaginationState;
   filters: FiltersState;
+  erroresExcel: ExcelImportRowError[];
   fetchTramites: () => Promise<void>;
   setPage: (page: number) => void;
   setFilters: (f: Partial<FiltersState>) => void;
@@ -39,6 +40,7 @@ interface TramitesState {
     cambios: { formularioNro01?: string; formularioNro12?: string }
   ) => Promise<void>;
   enviarAlWs: (ids: number[]) => Promise<void>;
+  limpiarErroresExcel: () => void;
 }
 
 export const useTramitesStore = create<TramitesState>((set, get) => ({
@@ -47,6 +49,7 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
   enviando: false,
   pagination: { page: 1, total: 0, totalPages: 1 },
   filters: { search: '', estado: 'all', ni: 'all', sortBy: 'creadoEn', sortDir: 'desc', pageSize: 10 },
+  erroresExcel: [],
 
   fetchTramites: async () => {
     const { filters, pagination } = get();
@@ -85,7 +88,10 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
 
   importarDesdeExcel: async (file) => {
     const resultado = await importarExcel(file);
-    set((s) => ({ pagination: { ...s.pagination, page: 1 } }));
+    set((s) => ({
+      pagination: { ...s.pagination, page: 1 },
+      erroresExcel: resultado.errores,
+    }));
     await get().fetchTramites();
     return { errores: resultado.errores.length, creados: resultado.tramites.length };
   },
@@ -105,4 +111,6 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
       set({ enviando: false });
     }
   },
+
+  limpiarErroresExcel: () => set({ erroresExcel: [] }),
 }));

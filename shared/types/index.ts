@@ -72,6 +72,13 @@ export interface GestorTramite {
 export interface ExcelImportRowError {
   fila: number;
   motivo: string;
+  datos?: {
+    facturaNro?: string;
+    chasis?: string;
+    titular?: string;
+    cuit?: string;
+    codFabrica?: string;
+  };
 }
 
 export interface ExcelImportResult {
