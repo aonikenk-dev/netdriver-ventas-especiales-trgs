@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FileDown, FileSpreadsheet } from 'lucide-react';
 import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/button';
@@ -7,16 +7,13 @@ import { useTramitesStore } from '@/store/useTramitesStore';
 import { useRemitosStore } from '@/store/useRemitosStore';
 
 export function Remitos() {
-  const { tramites, fetchTramites } = useTramitesStore();
+  const { tramitesImpresos, removerImpresos } = useTramitesStore();
   const { remitos, generando, fetchRemitos, crearRemito } = useRemitosStore();
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    fetchTramites();
     fetchRemitos();
-  }, [fetchTramites, fetchRemitos]);
-
-  const disponibles = useMemo(() => tramites.filter((t) => t.estado === 'ok'), [tramites]);
+  }, [fetchRemitos]);
 
   const toggle = (id: number) => {
     setSeleccion((prev) => {
@@ -29,7 +26,9 @@ export function Remitos() {
 
   const handleGenerar = async () => {
     try {
-      const remito = await crearRemito([...seleccion]);
+      const ids = [...seleccion];
+      const remito = await crearRemito(ids);
+      removerImpresos(ids);
       toast.success(`Remito ${remito.numero} generado`);
       setSeleccion(new Set());
     } catch {
@@ -57,11 +56,11 @@ export function Remitos() {
             <Button onClick={handleGenerar} disabled={seleccion.size === 0 || generando}>
               {generando ? 'Generando...' : `Generar remito (${seleccion.size})`}
             </Button>
-            <span className="toolbar__hint">{disponibles.length} tramite(s) en estado OK disponibles</span>
+            <span className="toolbar__hint">{tramitesImpresos.length} tramite(s) impresos disponibles para remito</span>
           </div>
 
           <div className="remito-list">
-            {disponibles.map((t) => (
+            {tramitesImpresos.map((t) => (
               <label key={t.id} className="remito-item">
                 <span>
                   <input
@@ -75,7 +74,11 @@ export function Remitos() {
                 <span className="remito-item__meta">traID {t.traID}</span>
               </label>
             ))}
-            {disponibles.length === 0 && <div className="table-empty">No hay tramites OK para incluir en un remito.</div>}
+            {tramitesImpresos.length === 0 && (
+              <div className="table-empty">
+                No hay trámites marcados como impresos. Imprimí los formularios desde la tabla de Trámites y cerrá el modal marcando como impreso.
+              </div>
+            )}
           </div>
         </div>
 

@@ -5,13 +5,14 @@ import {
   enviarSuats,
   importarExcel,
   listarTramites,
+  marcarImpreso as apiMarcarImpreso,
 } from '@/api/tramites';
 
 type SortField = 'creadoEn' | 'chasis' | 'titular' | 'estado';
 
 interface FiltersState {
   search: string;
-  estado: EstadoTramite | 'all';
+  estado: EstadoTramite | 'all' | 'impreso';
   ni: 'all' | '6801' | '6802';
   sortBy: SortField;
   sortDir: 'asc' | 'desc';
@@ -26,6 +27,7 @@ interface PaginationState {
 
 interface TramitesState {
   tramites: GestorTramite[];
+  tramitesImpresos: GestorTramite[];
   loading: boolean;
   enviando: boolean;
   pagination: PaginationState;
@@ -40,11 +42,14 @@ interface TramitesState {
     cambios: { formularioNro01?: string; formularioNro12?: string }
   ) => Promise<void>;
   enviarAlWs: (ids: number[]) => Promise<void>;
+  marcarImpreso: (id: number) => Promise<void>;
+  removerImpresos: (ids: number[]) => void;
   limpiarErroresExcel: () => void;
 }
 
 export const useTramitesStore = create<TramitesState>((set, get) => ({
   tramites: [],
+  tramitesImpresos: [],
   loading: false,
   enviando: false,
   pagination: { page: 1, total: 0, totalPages: 1 },
@@ -55,11 +60,13 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
     const { filters, pagination } = get();
     set({ loading: true });
     try {
+      const isImpresoFilter = filters.estado === 'impreso';
       const result = await listarTramites({
         page: pagination.page,
         pageSize: filters.pageSize,
         search: filters.search || undefined,
-        estado: filters.estado,
+        estado: isImpresoFilter ? 'ok' : filters.estado,
+        impreso: isImpresoFilter ? true : undefined,
         ni: filters.ni,
         sortBy: filters.sortBy,
         sortDir: filters.sortDir,
@@ -110,6 +117,20 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
     } finally {
       set({ enviando: false });
     }
+  },
+
+  marcarImpreso: async (id) => {
+    const tramite = await apiMarcarImpreso(id);
+    set((s) => ({
+      tramites: s.tramites.map((t) => (t.id === id ? tramite : t)),
+      tramitesImpresos: s.tramitesImpresos.some((t) => t.id === id)
+        ? s.tramitesImpresos.map((t) => (t.id === id ? tramite : t))
+        : [...s.tramitesImpresos, tramite],
+    }));
+  },
+
+  removerImpresos: (ids) => {
+    set((s) => ({ tramitesImpresos: s.tramitesImpresos.filter((t) => !ids.includes(t.id)) }));
   },
 
   limpiarErroresExcel: () => set({ erroresExcel: [] }),

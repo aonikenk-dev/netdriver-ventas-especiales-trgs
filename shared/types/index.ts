@@ -67,6 +67,7 @@ export interface GestorTramite {
   formularios: GestorFormulario[];
   logs: TramiteLog[];
   creadoEn: string;
+  impreso?: boolean;
 }
 
 export interface ExcelImportRowError {
@@ -92,6 +93,7 @@ export interface TramiteListParams {
   search?: string;
   estado?: EstadoTramite | 'all';
   ni?: 'all' | '6801' | '6802';
+  impreso?: boolean;
   sortBy?: 'creadoEn' | 'chasis' | 'titular' | 'estado';
   sortDir?: 'asc' | 'desc';
 }

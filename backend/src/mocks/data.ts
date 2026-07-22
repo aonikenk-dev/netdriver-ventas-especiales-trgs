@@ -185,7 +185,7 @@ export const tramitesStore: GestorTramite[] = [
 export const remitosStore: { id: number; numero: string; tramiteIds: number[]; creadoEn: string }[] = [];
 
 export function addTramites(nuevos: Omit<GestorTramite, 'id'>[]): GestorTramite[] {
-  const creados = nuevos.map((t) => ({ ...t, id: nextTramiteId++, logs: [] as TramiteLog[] }));
+  const creados = nuevos.map((t) => ({ ...t, id: nextTramiteId++, logs: [] as TramiteLog[], impreso: false }));
   tramitesStore.push(...creados);
   return creados;
 }

@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown, Printer, AlertCircle } from 'lucide-react';
+import {
+  ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
+  Printer, AlertCircle, FileCheck, Loader2,
+} from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
 import { UploadExcel } from '@/components/UploadExcel';
@@ -60,12 +63,14 @@ export function Tramites() {
   const {
     tramites, loading, enviando, pagination, filters,
     fetchTramites, setPage, setFilters, importarDesdeExcel, actualizarFormulario, enviarAlWs,
+    marcarImpreso,
   } = useTramitesStore();
 
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const [searchInput, setSearchInput] = useState('');
   const [modalDocs, setModalDocs] = useState<GestorTramite | null>(null);
   const [modalLogs, setModalLogs] = useState<GestorTramite | null>(null);
+  const [marcandoImpreso, setMarcandoImpreso] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetchTramites();
@@ -124,6 +129,22 @@ export function Tramites() {
     setFilters({ sortBy: field, sortDir: newDir });
   };
 
+  const handleMarcarImpreso = async (id: number) => {
+    setMarcandoImpreso((prev) => new Set([...prev, id]));
+    try {
+      await marcarImpreso(id);
+      toast.success('Trámite marcado como impreso. Ya está disponible en Remitos.');
+    } catch {
+      toast.error('No se pudo marcar como impreso');
+    } finally {
+      setMarcandoImpreso((prev) => {
+        const s = new Set(prev);
+        s.delete(id);
+        return s;
+      });
+    }
+  };
+
   return (
     <>
       <Topbar title="Tramites" />
@@ -161,13 +182,14 @@ export function Tramites() {
           <select
             className="tramites-filters__select"
             value={filters.estado}
-            onChange={(e) => setFilters({ estado: e.target.value as EstadoTramite | 'all' })}
+            onChange={(e) => setFilters({ estado: e.target.value as EstadoTramite | 'all' | 'impreso' })}
           >
             <option value="all">Todos</option>
             <option value="pendiente">Pendiente</option>
             <option value="enviando">Enviando</option>
             <option value="ok">OK</option>
             <option value="error">Error</option>
+            <option value="impreso">Impreso</option>
           </select>
 
           <span className="tramites-filters__label">N/I:</span>
@@ -244,7 +266,10 @@ export function Tramites() {
                   />
                 </TableCell>
                 <TableCell>
-                  <Badge variant={t.estado}>{ESTADO_LABEL[t.estado]}</Badge>
+                  <div className="estado-badges">
+                    <Badge variant={t.estado}>{ESTADO_LABEL[t.estado]}</Badge>
+                    {t.impreso && <Badge variant="impreso">Impreso</Badge>}
+                  </div>
                 </TableCell>
                 <TableCell className="cell-mono">
                   {t.estado === 'ok' && t.traID}
@@ -255,14 +280,27 @@ export function Tramites() {
                 <TableCell>
                   <div className="actions-cell">
                     {t.estado === 'ok' && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        title="Imprimir formularios"
-                        onClick={() => setModalDocs(t)}
-                      >
-                        <Printer size={14} />
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Imprimir formularios"
+                          onClick={() => setModalDocs(t)}
+                        >
+                          <Printer size={14} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title={t.impreso ? 'Ya marcado como impreso' : 'Marcar como impreso'}
+                          disabled={!!t.impreso || marcandoImpreso.has(t.id)}
+                          onClick={() => handleMarcarImpreso(t.id)}
+                        >
+                          {marcandoImpreso.has(t.id)
+                            ? <Loader2 size={14} className="modal-docs__spinner" />
+                            : <FileCheck size={14} className={t.impreso ? 'impreso-icon--done' : ''} />}
+                        </Button>
+                      </>
                     )}
                     {t.estado === 'error' && (
                       <Button

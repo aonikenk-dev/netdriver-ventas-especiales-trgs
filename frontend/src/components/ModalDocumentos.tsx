@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, ScrollText, Award, Receipt, Loader2, ExternalLink, Printer } from 'lucide-react';
+import { FileText, ScrollText, Award, Receipt, Loader2, ExternalLink, Printer, CheckCircle2 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,13 +10,13 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { apiClient } from '@/api/client';
+import { useTramitesStore } from '@/store/useTramitesStore';
 import type { GestorTramite, TipoFormularioDescarga } from '@shared/types';
 
 interface DocWsItem {
   tipo: TipoFormularioDescarga;
   label: string;
   icono: React.ReactNode;
-  conImprimir: boolean;
 }
 
 interface DocLocalItem {
@@ -59,7 +59,9 @@ interface Props {
 }
 
 export function ModalDocumentos({ tramite, onClose }: Props) {
+  const marcarImpresoStore = useTramitesStore((s) => s.marcarImpreso);
   const [cargando, setCargando] = useState<Set<string>>(new Set());
+  const [marcandoImpreso, setMarcandoImpreso] = useState(false);
 
   if (!tramite) return null;
 
@@ -71,16 +73,15 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
       tipo: tipoForm01,
       label: tipoForm01 === 'F01importado' ? 'Formulario 01 (importado)' : 'Formulario 01 (nacional)',
       icono: <FileText size={15} />,
-      conImprimir: true,
     },
-    { tipo: 'F12', label: 'Formulario 12', icono: <FileText size={15} />, conImprimir: true },
-    { tipo: 'Enmienda', label: 'Hoja de Enmienda', icono: <ScrollText size={15} />, conImprimir: true },
-    { tipo: 'DDJJ', label: 'Declaración Jurada', icono: <ScrollText size={15} />, conImprimir: true },
+    { tipo: 'F12',      label: 'Formulario 12',      icono: <FileText size={15} /> },
+    { tipo: 'Enmienda', label: 'Hoja de Enmienda',   icono: <ScrollText size={15} /> },
+    { tipo: 'DDJJ',     label: 'Declaración Jurada', icono: <ScrollText size={15} /> },
   ];
 
   const docsLocales: DocLocalItem[] = [
     { tipo: 'certificado', label: 'Certificado de Fábrica', icono: <Award size={15} /> },
-    { tipo: 'factura', label: 'Factura', icono: <Receipt size={15} /> },
+    { tipo: 'factura',     label: 'Factura',                icono: <Receipt size={15} /> },
   ];
 
   const setLoading = (key: string, on: boolean) =>
@@ -144,6 +145,33 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
     }
   };
 
+  const imprimirBundle = async () => {
+    setLoading('bundle', true);
+    try {
+      const r = await apiClient.get(`/api/tramites/${tramite.id}/bundle-imprimir`, {
+        responseType: 'blob',
+      });
+      imprimirBlob(r.data as Blob);
+    } catch {
+      toast.error('No se pudo generar el bundle de impresión');
+    } finally {
+      setLoading('bundle', false);
+    }
+  };
+
+  const handleMarcarImpreso = async () => {
+    setMarcandoImpreso(true);
+    try {
+      await marcarImpresoStore(tramite.id);
+      toast.success('Trámite marcado como impreso. Ya está disponible en Remitos.');
+      onClose();
+    } catch {
+      toast.error('No se pudo marcar como impreso');
+    } finally {
+      setMarcandoImpreso(false);
+    }
+  };
+
   return (
     <Dialog open={!!tramite} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
@@ -155,7 +183,7 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
             {tramite.auto.marcaChasis} {tramite.auto.modelo} &middot; {tramite.titular.nombre} &middot; traID:{' '}
             <span className="modal-docs__tra-id">{tramite.traID}</span>
           </DialogDescription>
-        </DialogHeader>      
+        </DialogHeader>
 
         <div className="modal-docs__list">
           <p className="modal-docs__section-label">Formularios del WS TRGS</p>
@@ -168,17 +196,15 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
                 <span className="modal-docs__item-icon">{doc.icono}</span>
                 <span className="modal-docs__item-label">{doc.label}</span>
                 <div className="modal-docs__item-actions">
-                  {doc.conImprimir && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Imprimir"
-                      disabled={busy}
-                      onClick={() => imprimirWs(doc.tipo)}
-                    >
-                      {isPrint ? <Loader2 size={13} className="modal-docs__spinner" /> : <Printer size={13} />}
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Imprimir"
+                    disabled={busy}
+                    onClick={() => imprimirWs(doc.tipo)}
+                  >
+                    {isPrint ? <Loader2 size={13} className="modal-docs__spinner" /> : <Printer size={13} />}
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -219,17 +245,40 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
             );
           })}
         </div>
-        
-         <div className="modal-docs__actions">
+
+        {/* Bundle: imprime todos los docs concatenados (Enmienda·DDJJ·Cert·Factura) vía iframe */}
+        <div className="modal-docs__actions">
           <Button
             variant="default"
             size="sm"
-            onClick={() => window.open(`/api/tramites/${tramite.id}/bundle-imprimir`, '_blank')}
+            disabled={cargando.has('bundle')}
+            onClick={imprimirBundle}
+            title="Imprimir todos salvo los forms 01 y 12"
           >
-            <Printer size={13} />
+            {cargando.has('bundle')
+              ? <Loader2 size={13} className="modal-docs__spinner" />
+              : <Printer size={13} />}
             Imprimir todos
           </Button>
           <span className="modal-docs__actions-hint">Enmienda · DDJJ · Certificado · Factura</span>
+        </div>
+
+        {/* Footer: acción principal para avanzar al siguiente paso del flujo */}
+        <div className="modal-docs__footer">
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            Cerrar
+          </Button>
+          <Button
+            variant="success"
+            size="sm"
+            disabled={marcandoImpreso || !!tramite.impreso}
+            onClick={handleMarcarImpreso}
+          >
+            {marcandoImpreso
+              ? <Loader2 size={13} className="modal-docs__spinner" />
+              : <CheckCircle2 size={13} />}
+            {tramite.impreso ? 'Ya marcado como impreso' : 'Cerrar y marcar como impreso'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -38,6 +38,13 @@ router.get('/', (req, res) => {
     lista = lista.filter((t) => t.auto.codigoClase === clase);
   }
 
+  const impresoFiltro = req.query.impreso;
+  if (impresoFiltro === 'true') {
+    lista = lista.filter((t) => !!t.impreso);
+  } else if (impresoFiltro === 'false') {
+    lista = lista.filter((t) => !t.impreso);
+  }
+
   lista.sort((a, b) => {
     let cmp = 0;
     if (sortBy === 'chasis') cmp = a.auto.nroChasis.localeCompare(b.auto.nroChasis);
@@ -54,6 +61,17 @@ router.get('/', (req, res) => {
   const tramites = lista.slice(start, start + pageSize);
 
   res.json({ tramites, total, page: actualPage, pageSize, totalPages });
+});
+
+// PATCH /api/tramites/:id/imprimir  -> marcar como impreso (habilita el tramite en Remitos)
+router.patch('/:id/imprimir', (req, res) => {
+  const tramite = findTramite(Number(req.params.id));
+  if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
+  if (tramite.estado !== 'ok') {
+    return res.status(400).json({ error: 'Solo se pueden marcar como impreso tramites con estado OK' });
+  }
+  tramite.impreso = true;
+  res.json({ tramite });
 });
 
 // PATCH /api/tramites/:id  -> actualizar nro formulario 01 / 12
