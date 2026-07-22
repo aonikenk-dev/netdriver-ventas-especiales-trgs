@@ -67,7 +67,7 @@
     border: 1px solid rgba($color-sienna, 0.4);
   }
 
-  &--impreso {
+  &--enviado-a-remito {
     background-color: rgba($color-moss, 0.22);
     color: $color-moss;
     border: 1px solid rgba($color-moss, 0.55);
@@ -629,7 +629,7 @@
   to { transform: rotate(360deg); }
 }
 
-.impreso-icon--done {
+.enviado-a-remito-icon--done {
   color: $color-moss;
 }
 

@@ -38,11 +38,11 @@ router.get('/', (req, res) => {
     lista = lista.filter((t) => t.auto.codigoClase === clase);
   }
 
-  const impresoFiltro = req.query.impreso;
-  if (impresoFiltro === 'true') {
-    lista = lista.filter((t) => !!t.impreso);
-  } else if (impresoFiltro === 'false') {
-    lista = lista.filter((t) => !t.impreso);
+  const enviadoARemitoFiltro = req.query.enviadoARemito;
+  if (enviadoARemitoFiltro === 'true') {
+    lista = lista.filter((t) => !!t.enviadoARemito);
+  } else if (enviadoARemitoFiltro === 'false') {
+    lista = lista.filter((t) => !t.enviadoARemito);
   }
 
   lista.sort((a, b) => {
@@ -63,14 +63,14 @@ router.get('/', (req, res) => {
   res.json({ tramites, total, page: actualPage, pageSize, totalPages });
 });
 
-// PATCH /api/tramites/:id/imprimir  -> marcar como impreso (habilita el tramite en Remitos)
-router.patch('/:id/imprimir', (req, res) => {
+// PATCH /api/tramites/:id/enviar-remito  -> habilita el tramite para ser incluido en un Remito
+router.patch('/:id/enviar-remito', (req, res) => {
   const tramite = findTramite(Number(req.params.id));
   if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
   if (tramite.estado !== 'ok') {
-    return res.status(400).json({ error: 'Solo se pueden marcar como impreso tramites con estado OK' });
+    return res.status(400).json({ error: 'Solo se pueden enviar a remito tramites con estado OK' });
   }
-  tramite.impreso = true;
+  tramite.enviadoARemito = true;
   res.json({ tramite });
 });
 

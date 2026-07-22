@@ -26,8 +26,8 @@ export async function enviarSuats(ids: number[]): Promise<GestorTramite[]> {
   return data.tramites;
 }
 
-export async function marcarImpreso(id: number): Promise<GestorTramite> {
-  const { data } = await apiClient.patch<{ tramite: GestorTramite }>(`/api/tramites/${id}/imprimir`);
+export async function enviarARemito(id: number): Promise<GestorTramite> {
+  const { data } = await apiClient.patch<{ tramite: GestorTramite }>(`/api/tramites/${id}/enviar-remito`);
   return data.tramite;
 }
 

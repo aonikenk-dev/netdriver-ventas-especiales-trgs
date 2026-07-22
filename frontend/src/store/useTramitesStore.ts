@@ -5,14 +5,14 @@ import {
   enviarSuats,
   importarExcel,
   listarTramites,
-  marcarImpreso as apiMarcarImpreso,
+  enviarARemito as apiEnviarARemito,
 } from '@/api/tramites';
 
 type SortField = 'creadoEn' | 'chasis' | 'titular' | 'estado';
 
 interface FiltersState {
   search: string;
-  estado: EstadoTramite | 'all' | 'impreso';
+  estado: EstadoTramite | 'all' | 'enviadoARemito';
   ni: 'all' | '6801' | '6802';
   sortBy: SortField;
   sortDir: 'asc' | 'desc';
@@ -27,7 +27,7 @@ interface PaginationState {
 
 interface TramitesState {
   tramites: GestorTramite[];
-  tramitesImpresos: GestorTramite[];
+  tramitesParaRemito: GestorTramite[];
   loading: boolean;
   enviando: boolean;
   pagination: PaginationState;
@@ -42,14 +42,14 @@ interface TramitesState {
     cambios: { formularioNro01?: string; formularioNro12?: string }
   ) => Promise<void>;
   enviarAlWs: (ids: number[]) => Promise<void>;
-  marcarImpreso: (id: number) => Promise<void>;
-  removerImpresos: (ids: number[]) => void;
+  enviarARemito: (id: number) => Promise<void>;
+  removerDeRemito: (ids: number[]) => void;
   limpiarErroresExcel: () => void;
 }
 
 export const useTramitesStore = create<TramitesState>((set, get) => ({
   tramites: [],
-  tramitesImpresos: [],
+  tramitesParaRemito: [],
   loading: false,
   enviando: false,
   pagination: { page: 1, total: 0, totalPages: 1 },
@@ -60,13 +60,13 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
     const { filters, pagination } = get();
     set({ loading: true });
     try {
-      const isImpresoFilter = filters.estado === 'impreso';
+      const isEnviadoARemitoFilter = filters.estado === 'enviadoARemito';
       const result = await listarTramites({
         page: pagination.page,
         pageSize: filters.pageSize,
         search: filters.search || undefined,
-        estado: isImpresoFilter ? 'ok' : filters.estado,
-        impreso: isImpresoFilter ? true : undefined,
+        estado: isEnviadoARemitoFilter ? 'ok' : filters.estado,
+        enviadoARemito: isEnviadoARemitoFilter ? true : undefined,
         ni: filters.ni,
         sortBy: filters.sortBy,
         sortDir: filters.sortDir,
@@ -119,18 +119,18 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
     }
   },
 
-  marcarImpreso: async (id) => {
-    const tramite = await apiMarcarImpreso(id);
+  enviarARemito: async (id) => {
+    const tramite = await apiEnviarARemito(id);
     set((s) => ({
       tramites: s.tramites.map((t) => (t.id === id ? tramite : t)),
-      tramitesImpresos: s.tramitesImpresos.some((t) => t.id === id)
-        ? s.tramitesImpresos.map((t) => (t.id === id ? tramite : t))
-        : [...s.tramitesImpresos, tramite],
+      tramitesParaRemito: s.tramitesParaRemito.some((t) => t.id === id)
+        ? s.tramitesParaRemito.map((t) => (t.id === id ? tramite : t))
+        : [...s.tramitesParaRemito, tramite],
     }));
   },
 
-  removerImpresos: (ids) => {
-    set((s) => ({ tramitesImpresos: s.tramitesImpresos.filter((t) => !ids.includes(t.id)) }));
+  removerDeRemito: (ids) => {
+    set((s) => ({ tramitesParaRemito: s.tramitesParaRemito.filter((t) => !ids.includes(t.id)) }));
   },
 
   limpiarErroresExcel: () => set({ erroresExcel: [] }),

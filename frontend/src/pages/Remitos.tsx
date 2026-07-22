@@ -9,7 +9,7 @@ import { useRemitosStore } from '@/store/useRemitosStore';
 import type { Remito } from '@shared/types';
 
 export function Remitos() {
-  const { tramitesImpresos, removerImpresos } = useTramitesStore();
+  const { tramitesParaRemito, removerDeRemito } = useTramitesStore();
   const { remitos, generando, fetchRemitos, crearRemito } = useRemitosStore();
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const [modalRemito, setModalRemito] = useState<Remito | null>(null);
@@ -19,8 +19,8 @@ export function Remitos() {
     fetchRemitos();
   }, [fetchRemitos]);
 
-  const todosSeleccionados = tramitesImpresos.length > 0 && tramitesImpresos.every((t) => seleccion.has(t.id));
-  const algunosSeleccionados = tramitesImpresos.some((t) => seleccion.has(t.id));
+  const todosSeleccionados = tramitesParaRemito.length > 0 && tramitesParaRemito.every((t) => seleccion.has(t.id));
+  const algunosSeleccionados = tramitesParaRemito.some((t) => seleccion.has(t.id));
 
   useEffect(() => {
     if (checkboxAllRef.current) {
@@ -41,7 +41,7 @@ export function Remitos() {
     if (todosSeleccionados) {
       setSeleccion(new Set());
     } else {
-      setSeleccion(new Set(tramitesImpresos.map((t) => t.id)));
+      setSeleccion(new Set(tramitesParaRemito.map((t) => t.id)));
     }
   };
 
@@ -49,7 +49,7 @@ export function Remitos() {
     try {
       const ids = [...seleccion];
       const remito = await crearRemito(ids);
-      removerImpresos(ids);
+      removerDeRemito(ids);
       toast.success(`Remito ${remito.numero} generado`);
       setSeleccion(new Set());
     } catch {
@@ -74,24 +74,24 @@ export function Remitos() {
 
         <div className="section-card upload-card">
           <div className="toolbar">
-            <Button onClick={handleGenerar} disabled={seleccion.size === 0 || generando}>
-              {generando ? 'Generando...' : `Generar remito (${seleccion.size})`}
-            </Button>
-            <span className="toolbar__hint">{tramitesImpresos.length} tramite(s) impresos disponibles</span>
             <label className="toolbar__select-all">
               <input
                 type="checkbox"
                 ref={checkboxAllRef}
                 checked={todosSeleccionados}
-                disabled={tramitesImpresos.length === 0}
+                disabled={tramitesParaRemito.length === 0}
                 onChange={toggleTodos}
               />
               Seleccionar todos
             </label>
+            <Button onClick={handleGenerar} disabled={seleccion.size === 0 || generando}>
+              {generando ? 'Generando...' : `Generar remito (${seleccion.size})`}
+            </Button>
+            <span className="toolbar__hint">{tramitesParaRemito.length} tramite(s) disponibles para remito</span>
           </div>
 
           <div className="remito-list">
-            {tramitesImpresos.map((t) => (
+            {tramitesParaRemito.map((t) => (
               <label key={t.id} className="remito-item">
                 <span>
                   <input
@@ -105,9 +105,9 @@ export function Remitos() {
                 <span className="remito-item__meta">traID {t.traID}</span>
               </label>
             ))}
-            {tramitesImpresos.length === 0 && (
+            {tramitesParaRemito.length === 0 && (
               <div className="table-empty">
-                No hay trámites marcados como impresos. Imprimí los formularios desde la tabla de Trámites y cerrá el modal marcando como impreso.
+                No hay tramites enviados a remito. Usá el botón "Enviar a remito" desde la tabla de Trámites o de Documentos.
               </div>
             )}
           </div>

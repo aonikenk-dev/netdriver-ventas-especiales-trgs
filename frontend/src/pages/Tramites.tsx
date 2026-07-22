@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
-  Printer, AlertCircle, FileCheck, Loader2,
+  Printer, AlertCircle, Send, Loader2,
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
@@ -63,15 +63,15 @@ export function Tramites() {
   const {
     tramites, loading, enviando, pagination, filters,
     fetchTramites, setPage, setFilters, importarDesdeExcel, actualizarFormulario, enviarAlWs,
-    marcarImpreso,
+    enviarARemito,
   } = useTramitesStore();
 
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const [searchInput, setSearchInput] = useState('');
   const [modalDocs, setModalDocs] = useState<GestorTramite | null>(null);
   const [modalLogs, setModalLogs] = useState<GestorTramite | null>(null);
-  const [marcandoImpreso, setMarcandoImpreso] = useState<Set<number>>(new Set());
-  const [marcandoLote, setMarcandoLote] = useState(false);
+  const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
+  const [enviandoLote, setEnviandoLote] = useState(false);
   const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -88,16 +88,17 @@ export function Tramites() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // Tramites seleccionables en la página actual (excluye los que están en proceso)
   const elegibles = useMemo(() => tramites.filter((t) => t.estado !== 'enviando'), [tramites]);
   const seleccionadosTramites = useMemo(() => tramites.filter((t) => seleccion.has(t.id)), [tramites, seleccion]);
   const seleccionPendiente = useMemo(() => seleccionadosTramites.filter((t) => t.estado === 'pendiente'), [seleccionadosTramites]);
   const seleccionables = useMemo(() => tramites.filter((t) => t.estado === 'pendiente'), [tramites]);
-  const seleccionablesParaImprimir = useMemo(() => tramites.filter((t) => t.estado === 'ok' && !t.impreso), [tramites]);
+  const seleccionOkParaRemito = useMemo(
+    () => seleccionadosTramites.filter((t) => t.estado === 'ok' && !t.enviadoARemito),
+    [seleccionadosTramites]
+  );
 
   const todosSeleccionados = elegibles.length > 0 && elegibles.every((t) => seleccion.has(t.id));
   const algunosSeleccionados = elegibles.some((t) => seleccion.has(t.id));
-  const seleccionOkNoImpresos = seleccionadosTramites.filter((t) => t.estado === 'ok' && !t.impreso);
 
   useEffect(() => {
     if (checkboxAllRef.current) {
@@ -156,15 +157,15 @@ export function Tramites() {
     setFilters({ sortBy: field, sortDir: newDir });
   };
 
-  const handleMarcarImpreso = async (id: number) => {
-    setMarcandoImpreso((prev) => new Set([...prev, id]));
+  const handleEnviarARemito = async (id: number) => {
+    setEnviandoARemito((prev) => new Set([...prev, id]));
     try {
-      await marcarImpreso(id);
-      toast.success('Trámite marcado como impreso. Ya está disponible en Remitos.');
+      await enviarARemito(id);
+      toast.success('Trámite enviado a remito. Ya está disponible en la pestaña Remitos.');
     } catch {
-      toast.error('No se pudo marcar como impreso');
+      toast.error('No se pudo enviar a remito');
     } finally {
-      setMarcandoImpreso((prev) => {
+      setEnviandoARemito((prev) => {
         const s = new Set(prev);
         s.delete(id);
         return s;
@@ -172,18 +173,18 @@ export function Tramites() {
     }
   };
 
-  const handleMarcarImpresoLote = async () => {
-    const ids = seleccionOkNoImpresos.map((t) => t.id);
+  const handleEnviarARemitoLote = async () => {
+    const ids = seleccionOkParaRemito.map((t) => t.id);
     if (ids.length === 0) return;
-    setMarcandoLote(true);
+    setEnviandoLote(true);
     try {
-      await Promise.all(ids.map((id) => marcarImpreso(id)));
-      toast.success(`${ids.length} trámite(s) marcados como impresos. Ya están disponibles en Remitos.`);
+      await Promise.all(ids.map((id) => enviarARemito(id)));
+      toast.success(`${ids.length} trámite(s) enviados a remito. Ya están disponibles en la pestaña Remitos.`);
       setSeleccion(new Set());
     } catch {
-      toast.error('No se pudieron marcar todos como impresos');
+      toast.error('No se pudieron enviar todos a remito');
     } finally {
-      setMarcandoLote(false);
+      setEnviandoLote(false);
     }
   };
 
@@ -208,19 +209,20 @@ export function Tramites() {
           <Button onClick={handleEnviar} disabled={seleccionPendiente.length === 0 || enviando}>
             {enviando ? 'Enviando...' : `Enviar SUATS (${seleccionPendiente.length})`}
           </Button>
-          <span className="toolbar__hint">{seleccionables.length} pendiente(s) en esta pagina</span>
+          {seleccionOkParaRemito.length > 0 && (
             <Button
               variant="outline"
               size="sm"
-              disabled={seleccionOkNoImpresos.length === 0 || marcandoLote}
-              onClick={handleMarcarImpresoLote}
+              disabled={enviandoLote}
+              onClick={handleEnviarARemitoLote}
             >
-              {marcandoLote
+              {enviandoLote
                 ? <Loader2 size={13} className="modal-docs__spinner" />
-                : <FileCheck size={13} />}
-              Marcar impresos ({seleccionOkNoImpresos.length})
+                : <Send size={13} />}
+              Enviar a remito ({seleccionOkParaRemito.length})
             </Button>
-            <span className="toolbar__hint">{seleccionablesParaImprimir.length} pendiente(s) en esta pagina</span>
+          )}
+          <span className="toolbar__hint">{seleccionables.length} pendiente(s) en esta pagina</span>
         </div>
 
         <div className="tramites-filters">
@@ -236,14 +238,14 @@ export function Tramites() {
           <select
             className="tramites-filters__select"
             value={filters.estado}
-            onChange={(e) => setFilters({ estado: e.target.value as EstadoTramite | 'all' | 'impreso' })}
+            onChange={(e) => setFilters({ estado: e.target.value as EstadoTramite | 'all' | 'enviadoARemito' })}
           >
             <option value="all">Todos</option>
             <option value="pendiente">Pendiente</option>
             <option value="enviando">Enviando</option>
             <option value="ok">OK</option>
             <option value="error">Error</option>
-            <option value="impreso">Impreso</option>
+            <option value="enviadoARemito">En remito</option>
           </select>
 
           <span className="tramites-filters__label">N/I:</span>
@@ -330,7 +332,7 @@ export function Tramites() {
                 <TableCell>
                   <div className="estado-badges">
                     <Badge variant={t.estado}>{ESTADO_LABEL[t.estado]}</Badge>
-                    {t.impreso && <Badge variant="impreso">Impreso</Badge>}
+                    {t.enviadoARemito && <Badge variant="enviadoARemito">En remito</Badge>}
                   </div>
                 </TableCell>
                 <TableCell className="cell-mono">
@@ -354,13 +356,13 @@ export function Tramites() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          title={t.impreso ? 'Ya marcado como impreso' : 'Marcar como impreso'}
-                          disabled={!!t.impreso || marcandoImpreso.has(t.id)}
-                          onClick={() => handleMarcarImpreso(t.id)}
+                          title={t.enviadoARemito ? 'Ya enviado a remito' : 'Enviar a remito'}
+                          disabled={!!t.enviadoARemito || enviandoARemito.has(t.id)}
+                          onClick={() => handleEnviarARemito(t.id)}
                         >
-                          {marcandoImpreso.has(t.id)
+                          {enviandoARemito.has(t.id)
                             ? <Loader2 size={14} className="modal-docs__spinner" />
-                            : <FileCheck size={14} className={t.impreso ? 'impreso-icon--done' : ''} />}
+                            : <Send size={14} className={t.enviadoARemito ? 'enviado-a-remito-icon--done' : ''} />}
                         </Button>
                       </>
                     )}

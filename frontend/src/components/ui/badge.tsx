@@ -10,7 +10,7 @@ const badgeVariants = cva('inline-flex items-center rounded-md px-2 py-0.5 font-
       enviando: 'status-badge status-badge--enviando',
       ok: 'status-badge status-badge--ok',
       error: 'status-badge status-badge--error',
-      impreso: 'status-badge status-badge--impreso',
+      enviadoARemito: 'status-badge status-badge--enviado-a-remito',
     },
   },
   defaultVariants: {

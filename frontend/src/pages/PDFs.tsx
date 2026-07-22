@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, FileCheck, LayoutGrid, Loader2, Printer, Table2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutGrid, Loader2, Printer, Send, Table2 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ function imprimirBlob(blob: Blob) {
 }
 
 export function PDFs() {
-  const marcarImpresoStore = useTramitesStore((s) => s.marcarImpreso);
+  const enviarARemitoStore = useTramitesStore((s) => s.enviarARemito);
 
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [tramites, setTramites] = useState<GestorTramite[]>([]);
@@ -60,9 +60,9 @@ export function PDFs() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [cargando, setCargando] = useState<Set<string>>(new Set());
-  const [marcandoImpreso, setMarcandoImpreso] = useState<Set<number>>(new Set());
+  const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
-  const [marcandoLote, setMarcandoLote] = useState(false);
+  const [enviandoLote, setEnviandoLote] = useState(false);
   const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   const setKey = (key: string, on: boolean) =>
@@ -79,7 +79,6 @@ export function PDFs() {
       setTramites(r.tramites);
       setTotal(r.total);
       setTotalPages(r.totalPages);
-      // Limpiar selección de tramites que ya no están en la página
       setSeleccion((prev) => {
         const ids = new Set(r.tramites.map((t) => t.id));
         return new Set([...prev].filter((id) => ids.has(id)));
@@ -93,7 +92,7 @@ export function PDFs() {
 
   const todosSeleccionados = tramites.length > 0 && tramites.every((t) => seleccion.has(t.id));
   const algunosSeleccionados = tramites.some((t) => seleccion.has(t.id));
-  const seleccionNoImpreso = tramites.filter((t) => seleccion.has(t.id) && !t.impreso);
+  const seleccionParaRemito = tramites.filter((t) => seleccion.has(t.id) && !t.enviadoARemito);
 
   useEffect(() => {
     if (checkboxAllRef.current) {
@@ -173,16 +172,16 @@ export function PDFs() {
     }
   };
 
-  const handleMarcarImpreso = async (id: number) => {
-    setMarcandoImpreso((prev) => new Set([...prev, id]));
+  const handleEnviarARemito = async (id: number) => {
+    setEnviandoARemito((prev) => new Set([...prev, id]));
     try {
-      await marcarImpresoStore(id);
-      setTramites((prev) => prev.map((t) => (t.id === id ? { ...t, impreso: true } : t)));
-      toast.success('Trámite marcado como impreso. Ya está disponible en Remitos.');
+      await enviarARemitoStore(id);
+      setTramites((prev) => prev.map((t) => (t.id === id ? { ...t, enviadoARemito: true } : t)));
+      toast.success('Trámite enviado a remito. Ya está disponible en la pestaña Remitos.');
     } catch {
-      toast.error('No se pudo marcar como impreso');
+      toast.error('No se pudo enviar a remito');
     } finally {
-      setMarcandoImpreso((prev) => {
+      setEnviandoARemito((prev) => {
         const s = new Set(prev);
         s.delete(id);
         return s;
@@ -190,19 +189,19 @@ export function PDFs() {
     }
   };
 
-  const handleMarcarImpresoLote = async () => {
-    const ids = seleccionNoImpreso.map((t) => t.id);
+  const handleEnviarARemitoLote = async () => {
+    const ids = seleccionParaRemito.map((t) => t.id);
     if (ids.length === 0) return;
-    setMarcandoLote(true);
+    setEnviandoLote(true);
     try {
-      await Promise.all(ids.map((id) => marcarImpresoStore(id)));
-      setTramites((prev) => prev.map((t) => ids.includes(t.id) ? { ...t, impreso: true } : t));
-      toast.success(`${ids.length} trámite(s) marcados como impresos. Ya están disponibles en Remitos.`);
+      await Promise.all(ids.map((id) => enviarARemitoStore(id)));
+      setTramites((prev) => prev.map((t) => ids.includes(t.id) ? { ...t, enviadoARemito: true } : t));
+      toast.success(`${ids.length} trámite(s) enviados a remito. Ya están disponibles en la pestaña Remitos.`);
       setSeleccion(new Set());
     } catch {
-      toast.error('No se pudieron marcar todos como impresos');
+      toast.error('No se pudieron enviar todos a remito');
     } finally {
-      setMarcandoLote(false);
+      setEnviandoLote(false);
     }
   };
 
@@ -223,17 +222,17 @@ export function PDFs() {
 
         {/* Toolbar */}
         <div className="docs-toolbar">
-          {seleccion.size > 0 && seleccionNoImpreso.length > 0 && (
+          {seleccion.size > 0 && seleccionParaRemito.length > 0 && (
             <Button
               variant="outline"
               size="sm"
-              disabled={marcandoLote}
-              onClick={handleMarcarImpresoLote}
+              disabled={enviandoLote}
+              onClick={handleEnviarARemitoLote}
             >
-              {marcandoLote
+              {enviandoLote
                 ? <Loader2 size={13} className="modal-docs__spinner" />
-                : <FileCheck size={13} />}
-              Marcar impresos ({seleccionNoImpreso.length})
+                : <Send size={13} />}
+              Enviar a remito ({seleccionParaRemito.length})
             </Button>
           )}
           <span className="tramites-filters__label">{total} trámite(s)</span>
@@ -287,11 +286,11 @@ export function PDFs() {
                     />
                     <div className="doc-card__info">
                       <span className="doc-card__title">
-                        {t.auto.nroChasis}
+                        {t.auto.marcaChasis} {t.auto.modelo}
                       </span>
-                      <span className="doc-card__meta">{t.auto.marcaChasis} {t.auto.modelo}</span>
+                      <span className="doc-card__meta">{t.auto.nroChasis}</span>
                     </div>
-                    {/* <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge> */}
+                    <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge>
                   </div>
 
                   <div className="doc-card__actions-row">
@@ -308,14 +307,14 @@ export function PDFs() {
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={!!t.impreso || marcandoImpreso.has(t.id)}
-                      title={t.impreso ? 'Ya marcado como impreso' : 'Marcar como impreso'}
-                      onClick={() => !t.impreso && handleMarcarImpreso(t.id)}
+                      disabled={!!t.enviadoARemito || enviandoARemito.has(t.id)}
+                      title={t.enviadoARemito ? 'Ya enviado a remito' : 'Enviar a remito'}
+                      onClick={() => !t.enviadoARemito && handleEnviarARemito(t.id)}
                     >
-                      {marcandoImpreso.has(t.id)
+                      {enviandoARemito.has(t.id)
                         ? <Loader2 size={13} className="modal-docs__spinner" />
-                        : <FileCheck size={13} className={t.impreso ? 'impreso-icon--done' : ''} />}
-                      {t.impreso ? 'Ya impreso' : 'Marcar impreso'}
+                        : <Send size={13} className={t.enviadoARemito ? 'enviado-a-remito-icon--done' : ''} />}
+                      {t.enviadoARemito ? 'En remito' : 'Enviar a remito'}
                     </Button>
                   </div>
 
@@ -404,7 +403,7 @@ export function PDFs() {
                   <TableHead className="doc-th--icon" title="Certificado de Fábrica">Cert.</TableHead>
                   <TableHead className="doc-th--icon" title="Factura">Fact.</TableHead>
                   <TableHead>Todos</TableHead>
-                  <TableHead className="doc-th--icon" title="Marcar como impreso">Imp.</TableHead>
+                  <TableHead className="doc-th--icon" title="Enviar a remito">Rem.</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -459,7 +458,7 @@ export function PDFs() {
                         {iconPrint('factura', () => imprimirLocalDoc(t.id, 'factura', t.auto.nroChasis))}
                       </TableCell>
                       <TableCell>
-                        <Button size="sm" disabled={busy('bundle')} onClick={() => imprimirBundle(t.id)} title="Imprimir todos salvo los forms 01 y 12">
+                        <Button size="sm" disabled={busy('bundle')} onClick={() => imprimirBundle(t.id)}>
                           {busy('bundle')
                             ? <Loader2 size={13} className="modal-docs__spinner" />
                             : <Printer size={13} />}
@@ -470,13 +469,13 @@ export function PDFs() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          title={t.impreso ? 'Ya marcado como impreso' : 'Marcar como impreso'}
-                          disabled={!!t.impreso || marcandoImpreso.has(t.id)}
-                          onClick={() => !t.impreso && handleMarcarImpreso(t.id)}
+                          title={t.enviadoARemito ? 'Ya enviado a remito' : 'Enviar a remito'}
+                          disabled={!!t.enviadoARemito || enviandoARemito.has(t.id)}
+                          onClick={() => !t.enviadoARemito && handleEnviarARemito(t.id)}
                         >
-                          {marcandoImpreso.has(t.id)
+                          {enviandoARemito.has(t.id)
                             ? <Loader2 size={13} className="modal-docs__spinner" />
-                            : <FileCheck size={13} className={t.impreso ? 'impreso-icon--done' : ''} />}
+                            : <Send size={13} className={t.enviadoARemito ? 'enviado-a-remito-icon--done' : ''} />}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -492,7 +491,6 @@ export function PDFs() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="pagination">
             <Button

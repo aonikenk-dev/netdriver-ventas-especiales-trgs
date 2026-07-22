@@ -59,9 +59,9 @@ interface Props {
 }
 
 export function ModalDocumentos({ tramite, onClose }: Props) {
-  const marcarImpresoStore = useTramitesStore((s) => s.marcarImpreso);
+  const enviarARemitoStore = useTramitesStore((s) => s.enviarARemito);
   const [cargando, setCargando] = useState<Set<string>>(new Set());
-  const [marcandoImpreso, setMarcandoImpreso] = useState(false);
+  const [enviandoARemito, setEnviandoARemito] = useState(false);
 
   if (!tramite) return null;
 
@@ -159,16 +159,16 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
     }
   };
 
-  const handleMarcarImpreso = async () => {
-    setMarcandoImpreso(true);
+  const handleEnviarARemito = async () => {
+    setEnviandoARemito(true);
     try {
-      await marcarImpresoStore(tramite.id);
-      toast.success('Trámite marcado como impreso. Ya está disponible en Remitos.');
+      await enviarARemitoStore(tramite.id);
+      toast.success('Trámite enviado a remito. Ya está disponible en Remitos.');
       onClose();
     } catch {
-      toast.error('No se pudo marcar como impreso');
+      toast.error('No se pudo enviar a remito');
     } finally {
-      setMarcandoImpreso(false);
+      setEnviandoARemito(false);
     }
   };
 
@@ -271,13 +271,13 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
           <Button
             variant="success"
             size="sm"
-            disabled={marcandoImpreso || !!tramite.impreso}
-            onClick={handleMarcarImpreso}
+            disabled={enviandoARemito || !!tramite.enviadoARemito}
+            onClick={handleEnviarARemito}
           >
-            {marcandoImpreso
+            {enviandoARemito
               ? <Loader2 size={13} className="modal-docs__spinner" />
               : <CheckCircle2 size={13} />}
-            {tramite.impreso ? 'Ya marcado como impreso' : 'Cerrar y marcar como impreso'}
+            {tramite.enviadoARemito ? 'Ya enviado a remito' : 'Cerrar y enviar a remito'}
           </Button>
         </div>
       </DialogContent>
