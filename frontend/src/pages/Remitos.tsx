@@ -74,6 +74,10 @@ export function Remitos() {
 
         <div className="section-card upload-card">
           <div className="toolbar">
+            <Button onClick={handleGenerar} disabled={seleccion.size === 0 || generando}>
+              {generando ? 'Generando...' : `Generar remito (${seleccion.size})`}
+            </Button>
+            <span className="toolbar__hint">{tramitesParaRemito.length} tramite(s) disponibles para remito</span>
             <label className="toolbar__select-all">
               <input
                 type="checkbox"
@@ -84,10 +88,6 @@ export function Remitos() {
               />
               Seleccionar todos
             </label>
-            <Button onClick={handleGenerar} disabled={seleccion.size === 0 || generando}>
-              {generando ? 'Generando...' : `Generar remito (${seleccion.size})`}
-            </Button>
-            <span className="toolbar__hint">{tramitesParaRemito.length} tramite(s) disponibles para remito</span>
           </div>
 
           <div className="remito-list">
@@ -99,7 +99,7 @@ export function Remitos() {
                     checked={seleccion.has(t.id)}
                     onChange={() => toggle(t.id)}
                   />{' '}
-                  <span className="cell-mono">{t.auto.nroChasis}</span> &mdash; {t.auto.marcaChasis}{' '}
+                  <span className="text-lg tabular-nums text-amber-900">{t.auto.nroChasis}</span> &mdash; {t.auto.marcaChasis}{' '}
                   {t.auto.modelo} &mdash; {t.titular.nombre}
                 </span>
                 <span className="remito-item__meta">traID {t.traID}</span>
