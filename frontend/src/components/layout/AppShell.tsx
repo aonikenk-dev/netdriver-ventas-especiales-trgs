@@ -5,7 +5,7 @@ import '@/styles/layout.scss';
 
 const NAV_ITEMS = [
   { to: '/tramites', label: 'Tramites', icon: FileSpreadsheet, badge: false },
-  { to: '/pdfs', label: 'Documentos', icon: FolderOpen, badge: false },
+  { to: '/documentos', label: 'Documentos', icon: FolderOpen, badge: false },
   { to: '/remitos', label: 'Remitos', icon: Truck, badge: false },
   { to: '/logs-excel', label: 'Logs Excel', icon: FileWarning, badge: true },
 ];

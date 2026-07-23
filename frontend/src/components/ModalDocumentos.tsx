@@ -127,14 +127,14 @@ export function ModalDocumentos({ tramite, onClose }: Props) {
   };
 
   const abrirLocal = (tipo: 'factura' | 'certificado') => {
-    window.open(`/api/pdfs/${tipo}/${tramite.auto.nroChasis}`, '_blank');
+    window.open(`/api/documentos/${tipo}/${tramite.auto.nroChasis}`, '_blank');
   };
 
   const imprimirLocal = async (tipo: 'factura' | 'certificado') => {
     const key = `${tipo}-print`;
     setLoading(key, true);
     try {
-      const response = await apiClient.get(`/api/pdfs/${tipo}/${tramite.auto.nroChasis}`, {
+      const response = await apiClient.get(`/api/documentos/${tipo}/${tramite.auto.nroChasis}`, {
         responseType: 'blob',
       });
       imprimirBlob(response.data as Blob);

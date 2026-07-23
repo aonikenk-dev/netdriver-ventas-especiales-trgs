@@ -49,7 +49,7 @@ function imprimirBlob(blob: Blob) {
   };
 }
 
-export function PDFs() {
+export function Documentos() {
   const enviarARemitoStore = useTramitesStore((s) => s.enviarARemito);
 
   const [viewMode, setViewMode] = useState<ViewMode>('table');
@@ -148,7 +148,7 @@ export function PDFs() {
     const key = `${tramiteId}-${tipo}`;
     setKey(key, true);
     try {
-      const r = await apiClient.get(`/api/pdfs/${tipo}/${chasis}`, { responseType: 'blob' });
+      const r = await apiClient.get(`/api/documentos/${tipo}/${chasis}`, { responseType: 'blob' });
       imprimirBlob(r.data as Blob);
     } catch {
       toast.error(`No se pudo imprimir ${tipo}`);
@@ -286,11 +286,11 @@ export function PDFs() {
                     />
                     <div className="doc-card__info">
                       <span className="doc-card__title">
-                        {t.auto.marcaChasis} {t.auto.modelo}
+                        {t.auto.nroChasis}
                       </span>
-                      <span className="doc-card__meta">{t.auto.nroChasis}</span>
+                      <span className="doc-card__meta">{t.auto.marcaChasis} {t.auto.modelo}</span>
                     </div>
-                    <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge>
+                    {/* <Badge variant="ok">{NI_LABEL[t.auto.codigoClase]}</Badge> */}
                   </div>
 
                   <div className="doc-card__actions-row">

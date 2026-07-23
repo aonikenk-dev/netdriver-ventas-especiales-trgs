@@ -110,7 +110,7 @@ netdriver-ventas-especiales-trgs/
 │   │   ├── routes/
 │   │   │   ├── excel.js          # POST /api/excel/import
 │   │   │   ├── tramites.js       # GET, POST /api/tramites
-│   │   │   ├── pdfs.js           # GET /api/pdfs/:tipo/:chasis
+│   │   │   ├── documentos.js           # GET /api/documentos/:tipo/:chasis
 │   │   │   └── remitos.js        # POST /api/remitos
 │   │   ├── services/
 │   │   │   ├── trgsService.js    # cliente SOAP (eco→sesion→tramite→cerrar)
@@ -126,7 +126,7 @@ netdriver-ventas-especiales-trgs/
     │   ├── components/           # Input, Button, Table, Badge, Toast
     │   ├── pages/
     │   │   ├── Tramites.jsx      # pantalla principal del operador
-    │   │   ├── PDFs.jsx          # visor de documentos
+    │   │   ├── Documentos.jsx          # visor de documentos
     │   │   └── Remitos.jsx       # módulo de remitos
     │   ├── api/
     │   │   └── client.js         # axios instance

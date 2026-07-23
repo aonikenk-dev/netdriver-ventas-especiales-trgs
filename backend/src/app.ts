@@ -4,7 +4,7 @@ import cors from 'cors';
 import path from 'node:path';
 import excelRouter from './routes/excel.js';
 import tramitesRouter from './routes/tramites.js';
-import pdfsRouter from './routes/pdfs.js';
+import documentosRouter from './routes/documentos.js';
 import remitosRouter from './routes/remitos.js';
 
 const app = express();
@@ -22,7 +22,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/excel', excelRouter);
 app.use('/api/tramites', tramitesRouter);
-app.use('/api/pdfs', pdfsRouter);
+app.use('/api/documentos', documentosRouter);
 app.use('/api/remitos', remitosRouter);
 
 app.listen(PORT, () => {

@@ -8,7 +8,7 @@ const TITULOS: Record<string, string> = {
   certificado: 'Certificado de Fabricacion',
 };
 
-// GET /api/pdfs/:tipo/:chasis  (factura | certificado)
+// GET /api/documentos/:tipo/:chasis  (factura | certificado)
 // PROTOTIPO: en el sistema real estos son archivos fisicos en PDF_DIR
 // nombrados F{chasis} / C{chasis}. Aca se genera un PDF de muestra al vuelo.
 router.get('/:tipo/:chasis', (req, res) => {
