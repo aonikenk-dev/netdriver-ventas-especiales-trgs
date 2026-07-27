@@ -6,6 +6,7 @@ import excelRouter from './routes/excel.js';
 import tramitesRouter from './routes/tramites.js';
 import documentosRouter from './routes/documentos.js';
 import remitosRouter from './routes/remitos.js';
+import configuracionRouter from './routes/configuracion.js';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
@@ -24,6 +25,7 @@ app.use('/api/excel', excelRouter);
 app.use('/api/tramites', tramitesRouter);
 app.use('/api/documentos', documentosRouter);
 app.use('/api/remitos', remitosRouter);
+app.use('/api/configuracion', configuracionRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend (mock) escuchando en http://localhost:${PORT}`);

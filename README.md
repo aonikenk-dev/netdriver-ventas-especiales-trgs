@@ -151,6 +151,9 @@ La base de datos SQL Server **no se modifica**. El backend se conecta directamen
 | `gestor_titulares` | FK tramite + persona, porcentaje siempre 100% |
 | `gestor_formularios` | Formularios 01 / 01importado / 12 post-WS OK |
 
+#### Comando docker que corre un script para resetear la base de datos
+> docker cp backend\reset.sql sqlserver:/tmp/reset.sql; docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Dev@1234!" -C -d netdriver_trgs -i /tmp/reset.sql
+ 
 ---
 
 ## Variables de entorno

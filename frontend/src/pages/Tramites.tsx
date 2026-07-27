@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
-  Printer, AlertCircle, Send, Loader2,
+  Printer, ScrollText, Send, Loader2,
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
@@ -366,16 +366,14 @@ export function Tramites() {
                         </Button>
                       </>
                     )}
-                    {t.estado === 'error' && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        title="Ver log de error"
-                        onClick={() => setModalLogs(t)}
-                      >
-                        <AlertCircle size={14} />
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title="Ver logs"
+                      onClick={() => setModalLogs(t)}
+                    >
+                      <ScrollText size={14} />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>

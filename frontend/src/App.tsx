@@ -5,6 +5,7 @@ import { Tramites } from '@/pages/Tramites';
 import { Documentos } from '@/pages/Documentos';
 import { Remitos } from '@/pages/Remitos';
 import { LogsExcel } from '@/pages/LogsExcel';
+import { Configuracion } from '@/pages/Configuracion';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/documentos" element={<Documentos />} />
           <Route path="/remitos" element={<Remitos />} />
           <Route path="/logs-excel" element={<LogsExcel />} />
+          <Route path="/configuracion" element={<Configuracion />} />
         </Route>
       </Routes>
     </BrowserRouter>

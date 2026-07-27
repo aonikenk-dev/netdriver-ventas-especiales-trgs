@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { FileSpreadsheet, FileWarning, FolderOpen, Truck } from 'lucide-react';
+import { FileSpreadsheet, FileWarning, FolderOpen, Settings, Truck } from 'lucide-react';
 import { useTramitesStore } from '@/store/useTramitesStore';
 import '@/styles/layout.scss';
 
@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/documentos', label: 'Documentos', icon: FolderOpen, badge: false },
   { to: '/remitos', label: 'Remitos', icon: Truck, badge: false },
   { to: '/logs-excel', label: 'Logs Excel', icon: FileWarning, badge: true },
+  { to: '/configuracion', label: 'Configuracion', icon: Settings, badge: false },
 ];
 
 export function AppShell() {
