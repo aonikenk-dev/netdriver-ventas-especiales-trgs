@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
-  ListOrdered, Printer, ScrollText, Send, Loader2,
+  ListOrdered, Printer, RotateCcw, ScrollText, Send, Loader2,
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
@@ -99,8 +99,13 @@ export function Tramites() {
 
   const elegibles = useMemo(() => tramites.filter((t) => t.estado !== 'enviando'), [tramites]);
   const seleccionadosTramites = useMemo(() => tramites.filter((t) => seleccion.has(t.id)), [tramites, seleccion]);
-  const seleccionPendiente = useMemo(() => seleccionadosTramites.filter((t) => t.estado === 'pendiente'), [seleccionadosTramites]);
-  const seleccionables = useMemo(() => tramites.filter((t) => t.estado === 'pendiente'), [tramites]);
+  // pendiente + error pueden (re)enviarse al WS
+  const seleccionParaEnviar = useMemo(
+    () => seleccionadosTramites.filter((t) => t.estado === 'pendiente' || t.estado === 'error'),
+    [seleccionadosTramites]
+  );
+  const pendientesEnPagina = useMemo(() => tramites.filter((t) => t.estado === 'pendiente'), [tramites]);
+  const erroresEnPagina = useMemo(() => tramites.filter((t) => t.estado === 'error'), [tramites]);
   const seleccionOkParaRemito = useMemo(
     () => seleccionadosTramites.filter((t) => t.estado === 'ok' && !t.enviadoARemito),
     [seleccionadosTramites],
@@ -155,7 +160,7 @@ export function Tramites() {
   };
 
   const handleEnviar = async () => {
-    const ids = seleccionPendiente.map((t) => t.id);
+    const ids = seleccionParaEnviar.map((t) => t.id);
     if (ids.length === 0) return;
     setEnviandoSuats(new Set(ids));
     try {
@@ -166,6 +171,18 @@ export function Tramites() {
       toast.error('Fallo la comunicacion con el WS de TRGS');
     } finally {
       setEnviandoSuats(new Set());
+    }
+  };
+
+  const handleReenviar = async (id: number) => {
+    setEnviandoSuats(new Set([id]));
+    try {
+      await enviarAlWs([id]);
+      toast.success('Trámite reenviado a TRGS');
+    } catch {
+      toast.error('Fallo la comunicacion con el WS de TRGS');
+    } finally {
+      setEnviandoSuats((prev) => { const s = new Set(prev); s.delete(id); return s; });
     }
   };
 
@@ -284,8 +301,8 @@ export function Tramites() {
         </div>
 
         <div className="toolbar">
-          <Button onClick={handleEnviar} disabled={seleccionPendiente.length === 0 || enviando}>
-            {enviando ? 'Enviando...' : `Enviar SUATS (${seleccionPendiente.length})`}
+          <Button onClick={handleEnviar} disabled={seleccionParaEnviar.length === 0 || enviando}>
+            {enviando ? 'Enviando...' : `Enviar SUATS (${seleccionParaEnviar.length})`}
           </Button>
           {seleccionOkParaRemito.length > 0 && (
             <Button variant="outline" size="sm" disabled={enviandoLote} onClick={handleEnviarARemitoLote}>
@@ -293,7 +310,11 @@ export function Tramites() {
               Enviar a remito ({seleccionOkParaRemito.length})
             </Button>
           )}
-          <span className="toolbar__hint">{seleccionables.length} pendiente(s) en esta pagina</span>
+          <span className="toolbar__hint">
+            {pendientesEnPagina.length} pendiente(s)
+            {erroresEnPagina.length > 0 && ` · ${erroresEnPagina.length} con error`}
+            {' '}en esta pagina
+          </span>
         </div>
 
         <div className="tramites-filters">
@@ -444,6 +465,16 @@ export function Tramites() {
                               : <Send size={14} className={t.enviadoARemito ? 'enviado-a-remito-icon--done' : ''} />}
                           </Button>
                         </>
+                      )}
+                      {t.estado === 'error' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Reintentar envío a TRGS"
+                          onClick={() => handleReenviar(t.id)}
+                        >
+                          <RotateCcw size={14} />
+                        </Button>
                       )}
                       <Button size="sm" variant="ghost" title="Ver logs" onClick={() => setModalLogs(t)}>
                         <ScrollText size={14} />
