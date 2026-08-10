@@ -70,6 +70,8 @@ export function Tramites() {
   const [searchInput, setSearchInput] = useState('');
   const [modalDocs, setModalDocs] = useState<GestorTramite | null>(null);
   const [modalLogs, setModalLogs] = useState<GestorTramite | null>(null);
+  const [procesando, setProcesando] = useState(false);
+  const [enviandoSuats, setEnviandoSuats] = useState<Set<number>>(new Set());
   const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
   const [enviandoLote, setEnviandoLote] = useState(false);
   const checkboxAllRef = useRef<HTMLInputElement>(null);
@@ -138,6 +140,7 @@ export function Tramites() {
   };
 
   const handleImport = async (file: File) => {
+    setProcesando(true);
     try {
       const { creados, errores } = await importarDesdeExcel(file);
       toast.success(`Excel procesado: ${creados} tramite(s) creado(s)`, {
@@ -146,18 +149,23 @@ export function Tramites() {
       setSeleccion(new Set());
     } catch {
       toast.error('No se pudo procesar el Excel');
+    } finally {
+      setProcesando(false);
     }
   };
 
   const handleEnviar = async () => {
     const ids = seleccionPendiente.map((t) => t.id);
     if (ids.length === 0) return;
+    setEnviandoSuats(new Set(ids));
     try {
       await enviarAlWs(ids);
       toast.success('Tramites enviados a TRGS');
       setSeleccion(new Set());
     } catch {
       toast.error('Fallo la comunicacion con el WS de TRGS');
+    } finally {
+      setEnviandoSuats(new Set());
     }
   };
 
@@ -181,6 +189,7 @@ export function Tramites() {
   const handleEnviarARemitoLote = async () => {
     const ids = seleccionOkParaRemito.map((t) => t.id);
     if (ids.length === 0) return;
+    setEnviandoARemito((prev) => new Set([...prev, ...ids]));
     setEnviandoLote(true);
     try {
       await Promise.all(ids.map((id) => enviarARemito(id)));
@@ -189,6 +198,7 @@ export function Tramites() {
     } catch {
       toast.error('No se pudieron enviar todos a remito');
     } finally {
+      setEnviandoARemito((prev) => { const s = new Set(prev); ids.forEach((id) => s.delete(id)); return s; });
       setEnviandoLote(false);
     }
   };
@@ -261,8 +271,16 @@ export function Tramites() {
           </div>
         </div>
 
+        <div className="tramites-body">
+        {procesando && (
+          <div className="tramites-overlay">
+            <Loader2 size={42} className="tramites-overlay__spinner" />
+            <span className="tramites-overlay__label">Procesando Excel...</span>
+          </div>
+        )}
+
         <div className="section-card upload-card">
-          <UploadExcel onFileSelected={handleImport} />
+          <UploadExcel onFileSelected={handleImport} disabled={procesando} />
         </div>
 
         <div className="toolbar">
@@ -353,15 +371,24 @@ export function Tramites() {
             {tramites.map((t) => {
               const fv = formValues.get(t.id) ?? { f01: '', f12: '' };
               const bloqueado = t.estado === 'ok' || t.estado === 'enviando';
+              const isProcessing = enviandoSuats.has(t.id) || enviandoARemito.has(t.id);
+              const rowClass = [
+                seleccion.has(t.id) ? 'table-row--selected' : '',
+                isProcessing ? 'table-row--processing' : '',
+              ].filter(Boolean).join(' ');
               return (
-                <TableRow key={t.id} className={seleccion.has(t.id) ? 'table-row--selected' : ''}>
+                <TableRow key={t.id} className={rowClass || undefined}>
                   <TableCell>
-                    <input
-                      type="checkbox"
-                      checked={seleccion.has(t.id)}
-                      disabled={t.estado === 'enviando'}
-                      onChange={() => toggle(t.id)}
-                    />
+                    {isProcessing
+                      ? <Loader2 size={14} className="row-spinner" />
+                      : (
+                        <input
+                          type="checkbox"
+                          checked={seleccion.has(t.id)}
+                          disabled={t.estado === 'enviando'}
+                          onChange={() => toggle(t.id)}
+                        />
+                      )}
                   </TableCell>
                   <TableCell className="data-table__chasis">{t.auto.nroChasis}</TableCell>
                   <TableCell>{t.titular.nombre}</TableCell>
@@ -447,6 +474,7 @@ export function Tramites() {
             <ChevronRight size={14} />
           </Button>
         </div>
+        </div>{/* tramites-body */}
       </div>
 
       <ModalDocumentos tramite={modalDocs} onClose={() => setModalDocs(null)} />

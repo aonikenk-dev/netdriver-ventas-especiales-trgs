@@ -6,9 +6,11 @@ import * as XLSX from 'xlsx';
 import type {
   CodigoClase,
   ExcelImportRowError,
-  ExcelImportResult,
   GestorTramite,
 } from '../../../shared/types/index.js';
+
+// Tramite parseado internamente — incluye numero de fila para validaciones
+export type TramiteParsed = Omit<GestorTramite, 'id'> & { _fila: number };
 
 const ID_GESTOR = 5452; // constante del cliente (Gestoria id 5452)
 const HEADER_ROWS = 1; // la primera fila del Excel es encabezado
@@ -35,12 +37,12 @@ function parseFecha(val: unknown): string {
   return String(val ?? '').trim();
 }
 
-export function parseExcelBuffer(buffer: Buffer): ExcelImportResult {
+export function parseExcelBuffer(buffer: Buffer): { tramites: TramiteParsed[]; errores: ExcelImportRowError[] } {
   const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
   const hoja = workbook.Sheets[workbook.SheetNames[0]];
   const filas: unknown[][] = XLSX.utils.sheet_to_json(hoja, { header: 1, blankrows: false });
 
-  const tramites: Omit<GestorTramite, 'id'>[] = [];
+  const tramites: TramiteParsed[] = [];
   const errores: ExcelImportRowError[] = [];
 
   filas.slice(HEADER_ROWS).forEach((fila, index) => {
@@ -80,6 +82,7 @@ export function parseExcelBuffer(buffer: Buffer): ExcelImportResult {
     }
 
     tramites.push({
+      _fila: numeroFila,
       auto: {
         id: 0,
         facturaNro,
