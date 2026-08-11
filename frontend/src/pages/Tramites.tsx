@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
-  ListOrdered, Printer, RotateCcw, ScrollText, Send, Loader2,
+  Archive, Eraser, ListOrdered, Printer, RotateCcw, ScrollText, Send, Loader2,
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
@@ -20,6 +20,7 @@ const ESTADO_LABEL: Record<EstadoTramite, string> = {
   enviando: 'Enviando...',
   ok: 'OK',
   error: 'Error',
+  descartado: 'Descartado',
 };
 
 const NI_LABEL: Record<CodigoClase, string> = {
@@ -63,7 +64,7 @@ export function Tramites() {
   const {
     tramites, loading, enviando, pagination, filters,
     fetchTramites, setPage, setFilters, importarDesdeExcel, actualizarFormulario, enviarAlWs,
-    enviarARemito,
+    enviarARemito, descartar,
   } = useTramitesStore();
 
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
@@ -74,6 +75,7 @@ export function Tramites() {
   const [enviandoSuats, setEnviandoSuats] = useState<Set<number>>(new Set());
   const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
   const [enviandoLote, setEnviandoLote] = useState(false);
+  const [descartando, setDescartando] = useState<Set<number>>(new Set());
   const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   // Estado controlado para los inputs de formulario (f01/f12)
@@ -97,7 +99,7 @@ export function Tramites() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const elegibles = useMemo(() => tramites.filter((t) => t.estado !== 'enviando'), [tramites]);
+  const elegibles = useMemo(() => tramites.filter((t) => t.estado !== 'enviando' && t.estado !== 'descartado'), [tramites]);
   const seleccionadosTramites = useMemo(() => tramites.filter((t) => seleccion.has(t.id)), [tramites, seleccion]);
   // pendiente + error pueden (re)enviarse al WS
   const seleccionParaEnviar = useMemo(
@@ -183,6 +185,18 @@ export function Tramites() {
       toast.error('Fallo la comunicacion con el WS de TRGS');
     } finally {
       setEnviandoSuats((prev) => { const s = new Set(prev); s.delete(id); return s; });
+    }
+  };
+
+  const handleDescartar = async (id: number) => {
+    setDescartando((prev) => new Set([...prev, id]));
+    try {
+      await descartar(id);
+      toast.success('Tramite descartado');
+    } catch {
+      toast.error('No se pudo descartar el tramite');
+    } finally {
+      setDescartando((prev) => { const s = new Set(prev); s.delete(id); return s; });
     }
   };
 
@@ -310,6 +324,15 @@ export function Tramites() {
               Enviar a remito ({seleccionOkParaRemito.length})
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            title="Mostrar solo pendientes y con error"
+            onClick={() => setFilters({ estado: 'activos' })}
+          >
+            <Eraser size={13} />
+            Limpiar lista
+          </Button>
           <span className="toolbar__hint">
             {pendientesEnPagina.length} pendiente(s)
             {erroresEnPagina.length > 0 && ` · ${erroresEnPagina.length} con error`}
@@ -330,13 +353,15 @@ export function Tramites() {
           <select
             className="tramites-filters__select"
             value={filters.estado}
-            onChange={(e) => setFilters({ estado: e.target.value as EstadoTramite | 'all' | 'enviadoARemito' })}
+            onChange={(e) => setFilters({ estado: e.target.value as EstadoTramite | 'all' | 'enviadoARemito' | 'activos' })}
           >
             <option value="all">Todos</option>
+            <option value="activos">Activos (pend + error)</option>
             <option value="pendiente">Pendiente</option>
             <option value="enviando">Enviando</option>
             <option value="ok">OK</option>
             <option value="error">Error</option>
+            <option value="descartado">Descartado</option>
             <option value="enviadoARemito">En remito</option>
           </select>
 
@@ -391,7 +416,7 @@ export function Tramites() {
           <TableBody>
             {tramites.map((t) => {
               const fv = formValues.get(t.id) ?? { f01: '', f12: '' };
-              const bloqueado = t.estado === 'ok' || t.estado === 'enviando';
+              const bloqueado = t.estado === 'ok' || t.estado === 'enviando' || t.estado === 'descartado';
               const isProcessing = enviandoSuats.has(t.id) || enviandoARemito.has(t.id);
               const rowClass = [
                 seleccion.has(t.id) ? 'table-row--selected' : '',
@@ -418,9 +443,11 @@ export function Tramites() {
                   </TableCell>
                   <TableCell>
                     <Input
+                      type="number"
+                      min={0}
                       className="data-table__num-input"
-                      value={fv.f01}
-                      placeholder="01-..."
+                      value={fv.f01.replace(/\D/g, '')}
+                      placeholder="01..."
                       disabled={bloqueado}
                       onChange={(e) => setFormVal(t.id, 'f01', e.target.value)}
                       onBlur={() => actualizarFormulario(t.id, { formularioNro01: fv.f01 })}
@@ -428,9 +455,11 @@ export function Tramites() {
                   </TableCell>
                   <TableCell>
                     <Input
+                      type="number"
+                      min={0}
                       className="data-table__num-input"
-                      value={fv.f12}
-                      placeholder="12-..."
+                      value={fv.f12.replace(/\D/g, '')}
+                      placeholder="12..."
                       disabled={bloqueado}
                       onChange={(e) => setFormVal(t.id, 'f12', e.target.value)}
                       onBlur={() => actualizarFormulario(t.id, { formularioNro12: fv.f12 })}
@@ -467,14 +496,27 @@ export function Tramites() {
                         </>
                       )}
                       {t.estado === 'error' && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          title="Reintentar envío a TRGS"
-                          onClick={() => handleReenviar(t.id)}
-                        >
-                          <RotateCcw size={14} />
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Reintentar envío a TRGS"
+                            onClick={() => handleReenviar(t.id)}
+                          >
+                            <RotateCcw size={14} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Marcar como descartado"
+                            disabled={descartando.has(t.id)}
+                            onClick={() => handleDescartar(t.id)}
+                          >
+                            {descartando.has(t.id)
+                              ? <Loader2 size={14} className="row-spinner" />
+                              : <Archive size={14} />}
+                          </Button>
+                        </>
                       )}
                       <Button size="sm" variant="ghost" title="Ver logs" onClick={() => setModalLogs(t)}>
                         <ScrollText size={14} />

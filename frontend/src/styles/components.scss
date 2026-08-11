@@ -72,6 +72,12 @@
     color: $color-moss;
     border: 1px solid rgba($color-moss, 0.55);
   }
+
+  &--descartado {
+    background-color: rgba($color-border, 0.25);
+    color: rgba($color-ink, 0.4);
+    border: 1px solid rgba($color-border, 0.5);
+  }
 }
 
 @keyframes pulse-soft {

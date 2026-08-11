@@ -1,5 +1,5 @@
 
-export type EstadoTramite = 'pendiente' | 'enviando' | 'ok' | 'error';
+export type EstadoTramite = 'pendiente' | 'enviando' | 'ok' | 'error' | 'descartado';
 
 export type CodigoClase = 6801 | 6802; // 6801 nacional, 6802 importado
 
@@ -91,7 +91,7 @@ export interface TramiteListParams {
   page?: number;
   pageSize?: number;
   search?: string;
-  estado?: EstadoTramite | 'all';
+  estado?: EstadoTramite | 'all' | 'activos';
   ni?: 'all' | '6801' | '6802';
   enviadoARemito?: boolean;
   sortBy?: 'creadoEn' | 'chasis' | 'titular' | 'estado';

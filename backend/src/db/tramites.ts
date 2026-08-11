@@ -101,18 +101,23 @@ export async function dbListarTramites(params: TramiteListParams): Promise<Trami
   };
   const orderBy = `${sortCol[sortBy] ?? 't.creadoEn'} ${sortDir === 'asc' ? 'ASC' : 'DESC'}`;
 
+  // Condición de estado: activos = pendiente+error; null = sin filtro; valor = exacto
+  const estadoCondicion = estado === 'activos'
+    ? `t.estado IN ('pendiente', 'error')`
+    : `(@estado IS NULL OR t.estado = @estado)`;
+
   const where = `
     WHERE (@search = '' OR LOWER(a.nroChasis) LIKE '%' + @search + '%'
                         OR LOWER(p.nombre)    LIKE '%' + @search + '%'
                         OR LOWER(ISNULL(CAST(t.traID AS nvarchar), '')) LIKE '%' + @search + '%')
-      AND (@estado IS NULL OR t.estado = @estado)
+      AND ${estadoCondicion}
       AND (@codigoClase IS NULL OR a.codigoClase = @codigoClase)
       AND (@enviadoARemito IS NULL OR t.enviadoARemito = @enviadoARemito)
   `;
 
   const inputs = (req: ReturnType<typeof pool.request>) => req
     .input('search',          sql.NVarChar,  search.toLowerCase())
-    .input('estado',          sql.VarChar,   estado === 'all' ? null : estado)
+    .input('estado',          sql.VarChar,   (estado === 'all' || estado === 'activos') ? null : estado)
     .input('codigoClase',     sql.Int,       ni === 'all' ? null : Number(ni))
     .input('enviadoARemito',  sql.Bit,       enviadoARemito ?? null)
     .input('offset',          sql.Int,       (page - 1) * pageSize)
@@ -212,6 +217,14 @@ export async function dbSetError(id: number, errorDesc: string): Promise<void> {
     .input('id',        sql.Int,      id)
     .input('errorDesc', sql.NVarChar, errorDesc)
     .query("UPDATE gestor_tramites SET estado = 'error', traID = NULL, errorDesc = @errorDesc WHERE id = @id");
+}
+
+export async function dbSetDescartado(id: number): Promise<GestorTramite> {
+  const pool = await getPool();
+  await pool.request()
+    .input('id', sql.Int, id)
+    .query("UPDATE gestor_tramites SET estado = 'descartado' WHERE id = @id");
+  return (await dbFindTramite(id))!;
 }
 
 // ---------------------------------------------------------------------------

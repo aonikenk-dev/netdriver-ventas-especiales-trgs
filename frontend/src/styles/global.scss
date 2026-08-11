@@ -64,3 +64,15 @@ h4 {
 .font-mono {
   font-family: $font-mono;
 }
+
+// Ocultar flechas nativas de inputs numéricos en todos los browsers
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

@@ -7,7 +7,7 @@ import { findTramite, tramitesStore } from '../mocks/data.js';
 import {
   dbListarTramites, dbFindTramite, dbUpdateFormulario,
   dbEnviarARemito, dbSetEnviando, dbSetOk, dbSetError,
-  dbInsertFormulario, dbGetFormulario,
+  dbSetDescartado, dbInsertFormulario, dbGetFormulario,
 } from '../db/tramites.js';
 import type { TramiteLog, TrgDatosTramite } from '../../../shared/types/index.js';
 
@@ -36,7 +36,8 @@ router.get('/', async (req, res) => {
           (t.traID?.toLowerCase().includes(search) ?? false)
       );
     }
-    if (estadoFiltro !== 'all') lista = lista.filter((t) => t.estado === estadoFiltro);
+    if (estadoFiltro === 'activos') lista = lista.filter((t) => t.estado === 'pendiente' || t.estado === 'error');
+    else if (estadoFiltro !== 'all') lista = lista.filter((t) => t.estado === estadoFiltro);
     if (niFiltro !== 'all') lista = lista.filter((t) => t.auto.codigoClase === Number(niFiltro));
     if (enviadoARemitoFiltro === 'true') lista = lista.filter((t) => !!t.enviadoARemito);
     else if (enviadoARemitoFiltro === 'false') lista = lista.filter((t) => !t.enviadoARemito);
@@ -95,6 +96,31 @@ router.patch('/:id/enviar-remito', async (req, res) => {
   } catch (err) {
     console.error('[PATCH /tramites/:id/enviar-remito]', err);
     res.status(500).json({ error: 'Error al actualizar el tramite' });
+  }
+});
+
+// PATCH /api/tramites/:id/descartar — baja lógica de tramites en error
+router.patch('/:id/descartar', async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (MOCKS) {
+    const tramite = findTramite(id);
+    if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
+    if (tramite.estado !== 'error') return res.status(400).json({ error: 'Solo se pueden descartar tramites con estado error' });
+    tramite.estado = 'descartado' as typeof tramite.estado;
+    return res.json({ tramite });
+  }
+
+  // --- DB ---
+  try {
+    const tramite = await dbFindTramite(id);
+    if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
+    if (tramite.estado !== 'error') return res.status(400).json({ error: 'Solo se pueden descartar tramites con estado error' });
+    const actualizado = await dbSetDescartado(id);
+    res.json({ tramite: actualizado });
+  } catch (err) {
+    console.error('[PATCH /tramites/:id/descartar]', err);
+    res.status(500).json({ error: 'Error al descartar el tramite' });
   }
 });
 

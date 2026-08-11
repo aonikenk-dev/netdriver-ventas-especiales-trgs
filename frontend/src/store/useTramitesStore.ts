@@ -6,13 +6,14 @@ import {
   importarExcel,
   listarTramites,
   enviarARemito as apiEnviarARemito,
+  descartarTramite as apiDescartar,
 } from '@/api/tramites';
 
 type SortField = 'creadoEn' | 'chasis' | 'titular' | 'estado';
 
 interface FiltersState {
   search: string;
-  estado: EstadoTramite | 'all' | 'enviadoARemito';
+  estado: EstadoTramite | 'all' | 'enviadoARemito' | 'activos';
   ni: 'all' | '6801' | '6802';
   sortBy: SortField;
   sortDir: 'asc' | 'desc';
@@ -43,6 +44,7 @@ interface TramitesState {
   ) => Promise<void>;
   enviarAlWs: (ids: number[]) => Promise<void>;
   enviarARemito: (id: number) => Promise<void>;
+  descartar: (id: number) => Promise<void>;
   removerDeRemito: (ids: number[]) => void;
   limpiarErroresExcel: () => void;
 }
@@ -95,9 +97,12 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
 
   importarDesdeExcel: async (file) => {
     const resultado = await importarExcel(file);
+    // Después de importar: ir a página 1 y mostrar solo activos (pendiente + error)
+    // para que los tramites nuevos aparezcan junto a los anteriores sin resolver.
     set((s) => ({
       pagination: { ...s.pagination, page: 1 },
       erroresExcel: resultado.errores,
+      filters: { ...s.filters, estado: 'activos' },
     }));
     await get().fetchTramites();
     return { errores: resultado.errores.length, creados: resultado.tramites.length };
@@ -127,6 +132,11 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
         ? s.tramitesParaRemito.map((t) => (t.id === id ? tramite : t))
         : [...s.tramitesParaRemito, tramite],
     }));
+  },
+
+  descartar: async (id) => {
+    const tramite = await apiDescartar(id);
+    set((s) => ({ tramites: s.tramites.map((t) => (t.id === id ? tramite : t)) }));
   },
 
   removerDeRemito: (ids) => {

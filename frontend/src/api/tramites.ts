@@ -31,6 +31,11 @@ export async function enviarARemito(id: number): Promise<GestorTramite> {
   return data.tramite;
 }
 
+export async function descartarTramite(id: number): Promise<GestorTramite> {
+  const { data } = await apiClient.patch<{ tramite: GestorTramite }>(`/api/tramites/${id}/descartar`);
+  return data.tramite;
+}
+
 export async function listarRemitos(): Promise<Remito[]> {
   const { data } = await apiClient.get<{ remitos: Remito[] }>('/api/remitos');
   return data.remitos;
