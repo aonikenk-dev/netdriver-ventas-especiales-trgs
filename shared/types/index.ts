@@ -21,9 +21,9 @@ export interface GestorAuto {
   modelo: string;
   nroMotor: string;
   marcaMotor: string;
-  ano: number;
+  ano: string;
   codFabrica: string;
-  facturaMonto: number;
+  facturaMonto: string;
   certificadoFabrica: string;
   codigoClase: CodigoClase;
 }

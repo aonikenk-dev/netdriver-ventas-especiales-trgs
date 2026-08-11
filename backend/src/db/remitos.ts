@@ -24,13 +24,15 @@ export async function dbListarRemitos(): Promise<Remito[]> {
   const tResult = await pool.request().query(`
     SELECT
       rt.idRemito,
-      t.id, t.traID, t.formularioNro01, t.formularioNro12,
+      t.id_tramite                                                    AS id,
+      t.traID, t.formularioNro01, t.formularioNro12,
       a.nroChasis, a.marcaChasis, a.modelo, a.certificadoFabrica,
-      p.nombre, p.cuit
+      ISNULL(p.Apellido, '') + ISNULL(', ' + NULLIF(p.Nombre, ''), '') AS nombre,
+      ISNULL(p.tipocuit, '') + ISNULL(p.nrocuit, '')                   AS cuit
     FROM remito_tramites rt
-    INNER JOIN gestor_tramites t  ON rt.idTramite  = t.id
-    INNER JOIN gestor_autos    a  ON t.idAuto      = a.id
-    INNER JOIN gestor_personas p  ON t.idPersona   = p.id
+    INNER JOIN gestor_tramites t  ON rt.idTramite = t.id_tramite
+    INNER JOIN gestor_autos    a  ON t.id_auto    = a.id_auto
+    INNER JOIN gestor_personas p  ON t.id_persona = p.id_persona
     WHERE rt.idRemito IN (${ids.join(',')})
   `);
 

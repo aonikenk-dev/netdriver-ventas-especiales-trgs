@@ -48,13 +48,13 @@ router.post('/import', upload.single('file'), async (req, res) => {
     try {
       const idPersona = await dbUpsertPersona(t.titular);
       const idAuto = await dbUpsertAuto(t.auto);
-      const idTramite = await dbInsertTramite(idAuto, idPersona);
+      const idTramite = await dbInsertTramite(idAuto, idPersona, t.auto.codigoClase);
 
       await pool.request()
         .input('idTramite', sql.Int, idTramite)
         .input('idPersona', sql.Int, idPersona)
         .query(
-          'INSERT INTO gestor_titulares (idTramite, idPersona, porcentaje) VALUES (@idTramite, @idPersona, 100)'
+          'INSERT INTO gestor_titulares (id_tramite, id_persona, porcentaje) VALUES (@idTramite, @idPersona, 100)'
         );
 
       const tramiteCreado = await dbFindTramite(idTramite);

@@ -57,9 +57,9 @@ export function parseExcelBuffer(buffer: Buffer): { tramites: TramiteParsed[]; e
     const modelo = celda(5); // F
     const nroMotor = celda(6); // G
     const marcaMotor = celda(7); // H
-    const ano = Number(celda(8)); // I
+    const ano = celda(8); // I — nvarchar en la DB
     const codFabrica = `${celda(9)}${celda(10)}${celda(11)}`; // J+K+L
-    const facturaMonto = Number(celda(12)); // M
+    const facturaMonto = celda(12); // M — nvarchar en la DB
     const nombreTitular = celda(13); // N
     const cuit = celda(14); // O
     // P: ignorar

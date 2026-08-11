@@ -4,6 +4,8 @@ import type {
   TramiteListParams, TramiteListResult,
 } from '../../../shared/types/index.js';
 
+const ID_GESTOR = 5452;
+
 // ---------------------------------------------------------------------------
 // Mapper fila SQL → GestorTramite
 // ---------------------------------------------------------------------------
@@ -19,49 +21,58 @@ function rowToTramite(r: Record<string, unknown>, formularios: GestorFormulario[
       modelo:             (r.modelo as string) ?? '',
       nroMotor:           (r.nroMotor as string) ?? '',
       marcaMotor:         (r.marcaMotor as string) ?? '',
-      ano:                (r.ano as number) ?? 0,
+      ano:                (r.ano as string) ?? '',
       codFabrica:         (r.codFabrica as string) ?? '',
-      facturaMonto:       (r.facturaMonto as number) ?? 0,
+      facturaMonto:       (r.facturaMonto as string) ?? '',
       certificadoFabrica: (r.certificadoFabrica as string) ?? '',
-      codigoClase:        r.codigoClase as CodigoClase,
+      codigoClase:        Number(r.codigoClase) as CodigoClase,
     },
     titular: {
       id:             r.personaId as number,
       idGestor:       r.idGestor as number,
-      nombre:         r.nombre as string,
-      cuit:           r.cuit as string,
+      nombre:         (r.nombre as string) ?? '',
+      cuit:           (r.cuit as string) ?? '',
       idTipoPersona:  r.idTipoPersona as number,
     },
-    estado:           r.estado as EstadoTramite,
+    estado:           (r.estado as EstadoTramite) ?? 'pendiente',
     traID:            (r.traID as string | null) ?? null,
     errorDesc:        (r.errorDesc as string | null) ?? null,
     formularioNro01:  (r.formularioNro01 as string | null) ?? null,
     formularioNro12:  (r.formularioNro12 as string | null) ?? null,
     formularios,
     logs:             [],
-    creadoEn:         r.creadoEn as string,
+    creadoEn:         (r.creadoEn as string) ?? '',
     enviadoARemito:   !!(r.enviadoARemito as number | boolean),
   };
 }
 
+// ---------------------------------------------------------------------------
+// BASE_SELECT — columnas reales de producción + columnas ve_* agregadas por ALTER TABLE
+// ---------------------------------------------------------------------------
 const BASE_SELECT = `
   SELECT
-    t.id, t.estado, t.traID, t.errorDesc,
+    t.id_tramite                                                   AS id,
+    t.ve_estado                                                    AS estado,
+    t.traID, t.errorDesc,
     t.formularioNro01, t.formularioNro12,
     t.enviadoARemito,
-    CONVERT(nvarchar(30), t.creadoEn, 126)       AS creadoEn,
-    a.id                                          AS autoId,
+    CONVERT(nvarchar(30), t.Fecha_Carga, 126)                     AS creadoEn,
+    a.id_auto                                                      AS autoId,
     a.facturaNro,
-    CONVERT(nvarchar(10), a.facturaFecha, 126)    AS facturaFecha,
+    CONVERT(nvarchar(10), a.facturaFecha, 126)                     AS facturaFecha,
     a.nroChasis, a.marcaChasis, a.modelo,
     a.nroMotor, a.marcaMotor, a.ano, a.codFabrica,
-    CAST(a.facturaMonto AS float)                 AS facturaMonto,
-    a.certificadoFabrica, a.codigoClase,
-    p.id                                          AS personaId,
-    p.idGestor, p.nombre, p.cuit, p.idTipoPersona
+    a.facturaMonto,
+    a.certificadoFabrica,
+    CAST(t.CodigoClase AS int)                                     AS codigoClase,
+    p.id_persona                                                   AS personaId,
+    p.id_gestor                                                    AS idGestor,
+    ISNULL(p.Apellido, '') + ISNULL(', ' + NULLIF(p.Nombre, ''), '') AS nombre,
+    ISNULL(p.tipocuit, '') + ISNULL(p.nrocuit, '')                AS cuit,
+    p.id_tipo_persona                                              AS idTipoPersona
   FROM gestor_tramites t
-  INNER JOIN gestor_autos   a ON t.idAuto    = a.id
-  INNER JOIN gestor_personas p ON t.idPersona = p.id
+  INNER JOIN gestor_autos    a ON t.id_auto    = a.id_auto
+  INNER JOIN gestor_personas p ON t.id_persona = p.id_persona
 `;
 
 // Traer formularios para un conjunto de tramiteIds
@@ -69,9 +80,8 @@ async function fetchFormularios(ids: number[]): Promise<Map<number, GestorFormul
   const map = new Map<number, GestorFormulario[]>();
   if (ids.length === 0) return map;
   const pool = await getPool();
-  // IDs son enteros generados internamente → interpolación segura
   const result = await pool.request().query(
-    `SELECT id, idTramite, tipo, numero FROM gestor_formularios WHERE idTramite IN (${ids.join(',')})`
+    `SELECT id, id_tramite AS idTramite, tipo, numero FROM gestor_formularios WHERE id_tramite IN (${ids.join(',')})`
   );
   for (const f of result.recordset as Record<string, unknown>[]) {
     const tid = f.idTramite as number;
@@ -95,30 +105,31 @@ export async function dbListarTramites(params: TramiteListParams): Promise<Trami
 
   const sortCol: Record<string, string> = {
     chasis:   'a.nroChasis',
-    titular:  'p.nombre',
-    estado:   't.estado',
-    creadoEn: 't.creadoEn',
+    titular:  'p.Apellido',
+    estado:   't.ve_estado',
+    creadoEn: 't.Fecha_Carga',
   };
-  const orderBy = `${sortCol[sortBy] ?? 't.creadoEn'} ${sortDir === 'asc' ? 'ASC' : 'DESC'}`;
+  const orderBy = `${sortCol[sortBy] ?? 't.Fecha_Carga'} ${sortDir === 'asc' ? 'ASC' : 'DESC'}`;
 
   // Condición de estado: activos = pendiente+error; null = sin filtro; valor = exacto
   const estadoCondicion = estado === 'activos'
-    ? `t.estado IN ('pendiente', 'error')`
-    : `(@estado IS NULL OR t.estado = @estado)`;
+    ? `t.ve_estado IN ('pendiente', 'error')`
+    : `(@estado IS NULL OR t.ve_estado = @estado)`;
 
   const where = `
     WHERE (@search = '' OR LOWER(a.nroChasis) LIKE '%' + @search + '%'
-                        OR LOWER(p.nombre)    LIKE '%' + @search + '%'
-                        OR LOWER(ISNULL(CAST(t.traID AS nvarchar), '')) LIKE '%' + @search + '%')
+                        OR LOWER(ISNULL(p.Apellido, '')) LIKE '%' + @search + '%'
+                        OR LOWER(ISNULL(p.Nombre, ''))   LIKE '%' + @search + '%'
+                        OR LOWER(ISNULL(t.traID, ''))    LIKE '%' + @search + '%')
       AND ${estadoCondicion}
-      AND (@codigoClase IS NULL OR a.codigoClase = @codigoClase)
+      AND (@codigoClase IS NULL OR t.CodigoClase = @codigoClase)
       AND (@enviadoARemito IS NULL OR t.enviadoARemito = @enviadoARemito)
   `;
 
   const inputs = (req: ReturnType<typeof pool.request>) => req
     .input('search',          sql.NVarChar,  search.toLowerCase())
     .input('estado',          sql.VarChar,   (estado === 'all' || estado === 'activos') ? null : estado)
-    .input('codigoClase',     sql.Int,       ni === 'all' ? null : Number(ni))
+    .input('codigoClase',     sql.NVarChar,  ni === 'all' ? null : String(ni))
     .input('enviadoARemito',  sql.Bit,       enviadoARemito ?? null)
     .input('offset',          sql.Int,       (page - 1) * pageSize)
     .input('pageSize',        sql.Int,       pageSize);
@@ -129,8 +140,8 @@ export async function dbListarTramites(params: TramiteListParams): Promise<Trami
     ),
     inputs(pool.request()).query(
       `SELECT COUNT(*) AS total FROM gestor_tramites t
-       INNER JOIN gestor_autos   a ON t.idAuto    = a.id
-       INNER JOIN gestor_personas p ON t.idPersona = p.id ${where}`
+       INNER JOIN gestor_autos    a ON t.id_auto    = a.id_auto
+       INNER JOIN gestor_personas p ON t.id_persona = p.id_persona ${where}`
     ),
   ]);
 
@@ -151,7 +162,7 @@ export async function dbFindTramite(id: number): Promise<GestorTramite | undefin
   const pool = await getPool();
   const result = await pool.request()
     .input('id', sql.Int, id)
-    .query(`${BASE_SELECT} WHERE t.id = @id`);
+    .query(`${BASE_SELECT} WHERE t.id_tramite = @id`);
   const rows = result.recordset as Record<string, unknown>[];
   if (rows.length === 0) return undefined;
   const fMap = await fetchFormularios([id]);
@@ -177,7 +188,7 @@ export async function dbUpdateFormulario(
     req.input('f12', sql.VarChar, cambios.formularioNro12);
   }
   if (sets.length > 0) {
-    await req.query(`UPDATE gestor_tramites SET ${sets.join(', ')} WHERE id = @id`);
+    await req.query(`UPDATE gestor_tramites SET ${sets.join(', ')} WHERE id_tramite = @id`);
   }
   return (await dbFindTramite(id))!;
 }
@@ -189,7 +200,7 @@ export async function dbEnviarARemito(id: number): Promise<GestorTramite> {
   const pool = await getPool();
   await pool.request()
     .input('id', sql.Int, id)
-    .query('UPDATE gestor_tramites SET enviadoARemito = 1 WHERE id = @id');
+    .query('UPDATE gestor_tramites SET enviadoARemito = 1 WHERE id_tramite = @id');
   return (await dbFindTramite(id))!;
 }
 
@@ -200,7 +211,7 @@ export async function dbSetEnviando(id: number): Promise<void> {
   const pool = await getPool();
   await pool.request()
     .input('id', sql.Int, id)
-    .query("UPDATE gestor_tramites SET estado = 'enviando' WHERE id = @id");
+    .query("UPDATE gestor_tramites SET ve_estado = 'enviando' WHERE id_tramite = @id");
 }
 
 export async function dbSetOk(id: number, traID: string): Promise<void> {
@@ -208,7 +219,7 @@ export async function dbSetOk(id: number, traID: string): Promise<void> {
   await pool.request()
     .input('id',    sql.Int,     id)
     .input('traID', sql.VarChar, traID)
-    .query("UPDATE gestor_tramites SET estado = 'ok', traID = @traID, errorDesc = NULL WHERE id = @id");
+    .query("UPDATE gestor_tramites SET ve_estado = 'ok', traID = @traID, errorDesc = NULL WHERE id_tramite = @id");
 }
 
 export async function dbSetError(id: number, errorDesc: string): Promise<void> {
@@ -216,29 +227,38 @@ export async function dbSetError(id: number, errorDesc: string): Promise<void> {
   await pool.request()
     .input('id',        sql.Int,      id)
     .input('errorDesc', sql.NVarChar, errorDesc)
-    .query("UPDATE gestor_tramites SET estado = 'error', traID = NULL, errorDesc = @errorDesc WHERE id = @id");
+    .query("UPDATE gestor_tramites SET ve_estado = 'error', traID = NULL, errorDesc = @errorDesc WHERE id_tramite = @id");
 }
 
 export async function dbSetDescartado(id: number): Promise<GestorTramite> {
   const pool = await getPool();
   await pool.request()
     .input('id', sql.Int, id)
-    .query("UPDATE gestor_tramites SET estado = 'descartado' WHERE id = @id");
+    .query("UPDATE gestor_tramites SET ve_estado = 'descartado' WHERE id_tramite = @id");
   return (await dbFindTramite(id))!;
 }
 
 // ---------------------------------------------------------------------------
 // Insertar tramite (desde importacion Excel)
 // ---------------------------------------------------------------------------
-export async function dbInsertTramite(idAuto: number, idPersona: number): Promise<number> {
+export async function dbInsertTramite(
+  idAuto: number,
+  idPersona: number,
+  codigoClase: CodigoClase
+): Promise<number> {
   const pool = await getPool();
   const result = await pool.request()
-    .input('idAuto',    sql.Int, idAuto)
-    .input('idPersona', sql.Int, idPersona)
+    .input('idAuto',       sql.Int,     idAuto)
+    .input('idPersona',    sql.Int,     idPersona)
+    .input('codigoClase',  sql.NVarChar, String(codigoClase))
     .query(`
-      INSERT INTO gestor_tramites (idAuto, idPersona, estado, creadoEn, enviadoARemito)
-      OUTPUT inserted.id
-      VALUES (@idAuto, @idPersona, 'pendiente', GETDATE(), 0)
+      INSERT INTO gestor_tramites
+        (id_gestor, id_auto, id_persona, id_mandatario, CodigoClase,
+         Fecha, Fecha_Carga, ve_estado, enviadoARemito)
+      OUTPUT inserted.id_tramite AS id
+      VALUES
+        (${ID_GESTOR}, @idAuto, @idPersona, 0, @codigoClase,
+         GETDATE(), GETDATE(), 'pendiente', 0)
     `);
   return (result.recordset[0] as { id: number }).id;
 }
@@ -259,7 +279,7 @@ export async function dbInsertFormulario(
     .input('numero',    sql.VarChar,   numero)
     .input('pdf',       sql.NVarChar,  pdfBase64 ?? null)
     .query(`
-      INSERT INTO gestor_formularios (idTramite, tipo, numero, pdfBase64)
+      INSERT INTO gestor_formularios (id_tramite, tipo, numero, pdfBase64)
       VALUES (@idTramite, @tipo, @numero, @pdf)
     `);
 }
@@ -275,7 +295,7 @@ export async function dbGetFormulario(
   const result = await pool.request()
     .input('idTramite', sql.Int,     idTramite)
     .input('tipo',      sql.VarChar, tipo)
-    .query('SELECT id, idTramite, tipo, numero, pdfBase64 FROM gestor_formularios WHERE idTramite = @idTramite AND tipo = @tipo');
+    .query('SELECT id, id_tramite AS idTramite, tipo, numero, pdfBase64 FROM gestor_formularios WHERE id_tramite = @idTramite AND tipo = @tipo');
   const rows = result.recordset as Record<string, unknown>[];
   if (rows.length === 0) return undefined;
   const r = rows[0];
