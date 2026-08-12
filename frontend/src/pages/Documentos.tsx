@@ -15,6 +15,10 @@ import {
 import { apiClient } from '@/api/client';
 import { listarTramites } from '@/api/tramites';
 import { useTramitesStore } from '@/store/useTramitesStore';
+import { useRemitosStore } from '@/store/useRemitosStore';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import type { GestorTramite, TipoFormularioDescarga } from '@shared/types';
 
 type ViewMode = 'grid' | 'table';
@@ -51,6 +55,8 @@ function imprimirBlob(blob: Blob) {
 
 export function Documentos() {
   const enviarARemitoStore = useTramitesStore((s) => s.enviarARemito);
+  const { remitoAbierto, fetchRemitoAbierto, abrirNuevo: abrirNuevoRemito } = useRemitosStore();
+  const [pendingEnvioSinRemito, setPendingEnvioSinRemito] = useState<number[] | null>(null);
 
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [tramites, setTramites] = useState<GestorTramite[]>([]);
@@ -172,29 +178,44 @@ export function Documentos() {
     }
   };
 
-  const handleEnviarARemito = async (id: number) => {
+  const resolverRemitoAbierto = async (): Promise<boolean> => {
+    let activo = remitoAbierto;
+    if (!activo) {
+      await fetchRemitoAbierto();
+      activo = useRemitosStore.getState().remitoAbierto;
+    }
+    return !!activo;
+  };
+
+  const doEnviarARemito = async (id: number) => {
     setEnviandoARemito((prev) => new Set([...prev, id]));
     try {
       await enviarARemitoStore(id);
       setTramites((prev) => prev.map((t) => (t.id === id ? { ...t, enviadoARemito: true } : t)));
+    } finally {
+      setEnviandoARemito((prev) => { const s = new Set(prev); s.delete(id); return s; });
+    }
+  };
+
+  const handleEnviarARemito = async (id: number) => {
+    const tieneRemito = await resolverRemitoAbierto();
+    if (!tieneRemito) { setPendingEnvioSinRemito([id]); return; }
+    try {
+      await doEnviarARemito(id);
       toast.success('Trámite enviado a remito. Ya está disponible en la pestaña Remitos.');
     } catch {
       toast.error('No se pudo enviar a remito');
-    } finally {
-      setEnviandoARemito((prev) => {
-        const s = new Set(prev);
-        s.delete(id);
-        return s;
-      });
     }
   };
 
   const handleEnviarARemitoLote = async () => {
     const ids = seleccionParaRemito.map((t) => t.id);
     if (ids.length === 0) return;
+    const tieneRemito = await resolverRemitoAbierto();
+    if (!tieneRemito) { setPendingEnvioSinRemito(ids); return; }
     setEnviandoLote(true);
     try {
-      await Promise.all(ids.map((id) => enviarARemitoStore(id)));
+      await Promise.all(ids.map((id) => doEnviarARemito(id)));
       setTramites((prev) => prev.map((t) => ids.includes(t.id) ? { ...t, enviadoARemito: true } : t));
       toast.success(`${ids.length} trámite(s) enviados a remito. Ya están disponibles en la pestaña Remitos.`);
       setSeleccion(new Set());
@@ -515,6 +536,47 @@ export function Documentos() {
           </div>
         )}
       </div>
+
+      {/* Diálogo: sin remito activo */}
+      <Dialog
+        open={pendingEnvioSinRemito !== null}
+        onOpenChange={(open) => { if (!open) setPendingEnvioSinRemito(null); }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sin remito activo</DialogTitle>
+            <DialogDescription>
+              No hay un remito abierto.{' '}
+              {(pendingEnvioSinRemito?.length ?? 0) === 1
+                ? '¿Querés abrir uno nuevo para agregar este trámite?'
+                : `¿Querés abrir uno nuevo para agregar los ${pendingEnvioSinRemito?.length} trámites seleccionados?`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingEnvioSinRemito(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={async () => {
+              const ids = pendingEnvioSinRemito ?? [];
+              setPendingEnvioSinRemito(null);
+              try {
+                await abrirNuevoRemito();
+                await Promise.all(ids.map((id) => doEnviarARemito(id)));
+                setTramites((prev) => prev.map((t) => ids.includes(t.id) ? { ...t, enviadoARemito: true } : t));
+                toast.success(ids.length === 1
+                  ? 'Remito abierto y trámite agregado.'
+                  : `Remito abierto y ${ids.length} trámites agregados.`
+                );
+                setSeleccion(new Set());
+              } catch {
+                toast.error('No se pudo completar la operación');
+              }
+            }}>
+              Abrir remito y agregar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

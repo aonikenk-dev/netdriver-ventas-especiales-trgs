@@ -14,6 +14,10 @@ import { ModalDocumentos } from '@/components/ModalDocumentos';
 import { ModalLogs } from '@/components/ModalLogs';
 import { ModalTramiteDetalle } from '@/components/ModalTramiteDetalle';
 import { useTramitesStore } from '@/store/useTramitesStore';
+import { useRemitosStore } from '@/store/useRemitosStore';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import type { EstadoTramite, CodigoClase, GestorTramite } from '@shared/types';
 
 const ESTADO_LABEL: Record<EstadoTramite, string> = {
@@ -78,6 +82,9 @@ export function Tramites() {
   const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
   const [enviandoLote, setEnviandoLote] = useState(false);
   const [descartando, setDescartando] = useState<Set<number>>(new Set());
+  const [pendingEnvioSinRemito, setPendingEnvioSinRemito] = useState<number[] | null>(null);
+
+  const { remitoAbierto, fetchRemitoAbierto, abrirNuevo: abrirNuevoRemito } = useRemitosStore();
   const checkboxAllRef = useRef<HTMLInputElement>(null);
 
   // Estado controlado para los inputs de formulario (f01/f12)
@@ -207,7 +214,18 @@ export function Tramites() {
     setFilters({ sortBy: field, sortDir: newDir });
   };
 
+  const resolverRemitoAbierto = async (): Promise<boolean> => {
+    let activo = remitoAbierto;
+    if (!activo) {
+      await fetchRemitoAbierto();
+      activo = useRemitosStore.getState().remitoAbierto;
+    }
+    return !!activo;
+  };
+
   const handleEnviarARemito = async (id: number) => {
+    const tieneRemito = await resolverRemitoAbierto();
+    if (!tieneRemito) { setPendingEnvioSinRemito([id]); return; }
     setEnviandoARemito((prev) => new Set([...prev, id]));
     try {
       await enviarARemito(id);
@@ -222,6 +240,8 @@ export function Tramites() {
   const handleEnviarARemitoLote = async () => {
     const ids = seleccionOkParaRemito.map((t) => t.id);
     if (ids.length === 0) return;
+    const tieneRemito = await resolverRemitoAbierto();
+    if (!tieneRemito) { setPendingEnvioSinRemito(ids); return; }
     setEnviandoARemito((prev) => new Set([...prev, ...ids]));
     setEnviandoLote(true);
     try {
@@ -570,6 +590,49 @@ export function Tramites() {
         onClose={() => setModalDetalle(null)}
         onSave={actualizarDatos}
       />
+
+      {/* Diálogo: sin remito activo */}
+      <Dialog
+        open={pendingEnvioSinRemito !== null}
+        onOpenChange={(open) => { if (!open) setPendingEnvioSinRemito(null); }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sin remito activo</DialogTitle>
+            <DialogDescription>
+              No hay un remito abierto.{' '}
+              {(pendingEnvioSinRemito?.length ?? 0) === 1
+                ? '¿Querés abrir uno nuevo para agregar este trámite?'
+                : `¿Querés abrir uno nuevo para agregar los ${pendingEnvioSinRemito?.length} trámites seleccionados?`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingEnvioSinRemito(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={async () => {
+              const ids = pendingEnvioSinRemito ?? [];
+              setPendingEnvioSinRemito(null);
+              try {
+                await abrirNuevoRemito();
+                setEnviandoARemito(new Set(ids));
+                await Promise.all(ids.map((id) => enviarARemito(id)));
+                toast.success(ids.length === 1
+                  ? 'Remito abierto y trámite agregado.'
+                  : `Remito abierto y ${ids.length} trámites agregados.`
+                );
+                setSeleccion(new Set());
+              } catch {
+                toast.error('No se pudo completar la operación');
+              } finally {
+                setEnviandoARemito(new Set());
+              }
+            }}>
+              Abrir remito y agregar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

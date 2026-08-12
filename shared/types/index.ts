@@ -170,12 +170,13 @@ export interface RemitoTramite {
 
 export interface Remito {
   id: number;
-  numero: string;
+  nroRemito: number;
   tramiteIds: number[];
   tramites: RemitoTramite[];
   creadoEn: string;
   pdfUrl: string;
   excelUrl: string;
+  estado: 'abierto' | 'cerrado';
 }
 
 export type TipoFormularioDescarga =

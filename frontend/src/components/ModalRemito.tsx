@@ -32,7 +32,7 @@ export function ModalRemito({ remito, onClose }: Props) {
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="modal-remito__title">
-            Remito {remito.numero}
+            Remito RTO-{remito.nroRemito}
           </DialogTitle>
           <DialogDescription>
             {fechaFormateada} &middot; {remito.tramites.length} trámite(s)

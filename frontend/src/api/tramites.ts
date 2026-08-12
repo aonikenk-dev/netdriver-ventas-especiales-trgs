@@ -49,7 +49,22 @@ export async function listarRemitos(): Promise<Remito[]> {
   return data.remitos;
 }
 
-export async function generarRemito(tramiteIds: number[]): Promise<Remito> {
-  const { data } = await apiClient.post<{ remito: Remito }>('/api/remitos', { tramiteIds });
+export async function getRemitoActivo(): Promise<Remito | null> {
+  const { data } = await apiClient.get<{ activo: Remito | null }>('/api/remitos/activo');
+  return data.activo;
+}
+
+export async function abrirNuevoRemito(): Promise<Remito> {
+  const { data } = await apiClient.post<{ remito: Remito }>('/api/remitos');
+  return data.remito;
+}
+
+export async function cerrarRemito(id: number): Promise<Remito> {
+  const { data } = await apiClient.patch<{ remito: Remito }>(`/api/remitos/${id}/cerrar`);
+  return data.remito;
+}
+
+export async function abrirRemito(id: number): Promise<Remito> {
+  const { data } = await apiClient.patch<{ remito: Remito }>(`/api/remitos/${id}/abrir`);
   return data.remito;
 }

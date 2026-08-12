@@ -83,7 +83,8 @@ CREATE TABLE gestor_tramites (
   errorDesc           NVARCHAR(500),
   formularioNro01     NVARCHAR(50),
   formularioNro12     NVARCHAR(50),
-  enviadoARemito      BIT           NOT NULL DEFAULT 0
+  enviadoARemito      BIT           NOT NULL DEFAULT 0,
+  Titulo              NVARCHAR(100)           -- RTO-{nroRemito} al enviar a remito
 );
 
 CREATE TABLE gestor_titulares (
@@ -112,11 +113,12 @@ CREATE TABLE gestor_formularios (
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE remitos (
-  id        INT           IDENTITY(1,1) PRIMARY KEY,
-  numero    VARCHAR(20)   NOT NULL UNIQUE,
-  creadoEn  DATETIME      NOT NULL DEFAULT GETDATE(),
-  pdfUrl    VARCHAR(500),
-  excelUrl  VARCHAR(500)
+  id         INT          IDENTITY(1,1) PRIMARY KEY,
+  nroRemito  INT          NOT NULL UNIQUE,   -- número correlativo de negocio (RTO-XXXXXX en UI/PDF)
+  creadoEn   DATETIME     NOT NULL DEFAULT GETDATE(),
+  pdfUrl     VARCHAR(500),
+  excelUrl   VARCHAR(500),
+  estado     VARCHAR(10)  NOT NULL DEFAULT 'cerrado'
 );
 
 CREATE TABLE remito_tramites (
@@ -144,6 +146,9 @@ GO
 -- ALTER TABLE gestor_tramites ADD formularioNro01 NVARCHAR(50)  NULL;
 -- ALTER TABLE gestor_tramites ADD formularioNro12 NVARCHAR(50)  NULL;
 -- ALTER TABLE gestor_tramites ADD enviadoARemito  BIT           NOT NULL DEFAULT 0;
+-- ALTER TABLE gestor_tramites ADD Titulo          NVARCHAR(100) NULL;
+-- ALTER TABLE remitos         ADD nroRemito       INT           NOT NULL UNIQUE;
+-- (si ya existe numero: ejecutar script de migración nroRemito = ROW_NUMBER() OVER (ORDER BY id))
 -- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------

@@ -10,6 +10,8 @@ import {
   dbSetDescartado, dbInsertFormulario, dbGetFormulario, dbUpdateCodigoClase,
 } from '../db/tramites.js';
 import { dbUpdateAuto, dbGetChasisExistentes } from '../db/autos.js';
+import { dbGetRemitoAbierto, dbAddTramiteToRemito } from '../db/remitos.js';
+import { findRemitoAbierto } from '../mocks/data.js';
 import { dbUpdatePersona } from '../db/personas.js';
 import type { TramiteDatosUpdate } from '../../../shared/types/index.js';
 import type { TramiteLog, TrgDatosTramite } from '../../../shared/types/index.js';
@@ -86,6 +88,23 @@ router.patch('/:id/enviar-remito', async (req, res) => {
     if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
     if (tramite.estado !== 'ok') return res.status(400).json({ error: 'Solo se pueden enviar a remito tramites con estado OK' });
     tramite.enviadoARemito = true;
+    // Asociar al remito abierto si existe
+    const remitoAbierto = findRemitoAbierto();
+    if (remitoAbierto && !remitoAbierto.tramiteIds.includes(id)) {
+      remitoAbierto.tramiteIds.push(id);
+      remitoAbierto.tramites.push({
+        id: tramite.id,
+        nroChasis:         tramite.auto.nroChasis,
+        marcaChasis:       tramite.auto.marcaChasis,
+        modelo:            tramite.auto.modelo,
+        titular:           tramite.titular.nombre,
+        cuit:              tramite.titular.cuit,
+        traID:             tramite.traID,
+        certificadoFabrica: tramite.auto.certificadoFabrica ?? null,
+        formularioNro01:   tramite.formularioNro01 ?? null,
+        formularioNro12:   tramite.formularioNro12 ?? null,
+      });
+    }
     return res.json({ tramite });
   }
 
@@ -95,6 +114,11 @@ router.patch('/:id/enviar-remito', async (req, res) => {
     if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
     if (tramite.estado !== 'ok') return res.status(400).json({ error: 'Solo se pueden enviar a remito tramites con estado OK' });
     const actualizado = await dbEnviarARemito(id);
+    // Asociar al remito abierto si existe
+    const remitoAbierto = await dbGetRemitoAbierto();
+    if (remitoAbierto) {
+      await dbAddTramiteToRemito(remitoAbierto.id, id, remitoAbierto.nroRemito);
+    }
     res.json({ tramite: actualizado });
   } catch (err) {
     console.error('[PATCH /tramites/:id/enviar-remito]', err);

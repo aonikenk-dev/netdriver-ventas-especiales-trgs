@@ -1,7 +1,7 @@
 ﻿// Almacen en memoria que simula las tablas gestor_* mientras no hay
 // conexion real a SQL Server. Se reinicia cada vez que se reinicia el server.
 
-import type { GestorTramite, TramiteLog } from '../../../shared/types/index.js';
+import type { GestorTramite, RemitoTramite, TramiteLog } from '../../../shared/types/index.js';
 
 let nextTramiteId = 16;
 let nextRemitoId = 1;
@@ -182,7 +182,22 @@ export const tramitesStore: GestorTramite[] = [
   },
 ];
 
-export const remitosStore: { id: number; numero: string; tramiteIds: number[]; creadoEn: string }[] = [];
+export interface RemitoMock {
+  id: number;
+  nroRemito: number;
+  tramiteIds: number[];
+  tramites: RemitoTramite[];
+  creadoEn: string;
+  pdfUrl: string;
+  excelUrl: string;
+  estado: 'abierto' | 'cerrado';
+}
+
+export const remitosStore: RemitoMock[] = [];
+
+export function findRemitoAbierto(): RemitoMock | undefined {
+  return remitosStore.find((r) => r.estado === 'abierto');
+}
 
 export function addTramites(nuevos: Omit<GestorTramite, 'id'>[]): GestorTramite[] {
   const creados = nuevos.map((t) => ({ ...t, id: nextTramiteId++, logs: [] as TramiteLog[], enviadoARemito: false }));
@@ -194,7 +209,7 @@ export function findTramite(id: number): GestorTramite | undefined {
   return tramitesStore.find((t) => t.id === id);
 }
 
-export function nextRemitoNumero(): { id: number; numero: string } {
+export function nextRemitoNumero(): { id: number; nroRemito: number } {
   const id = nextRemitoId++;
-  return { id, numero: `RTO-${String(id).padStart(6, '0')}` };
+  return { id, nroRemito: id };
 }
