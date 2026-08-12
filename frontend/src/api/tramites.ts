@@ -1,4 +1,4 @@
-import type { ExcelImportResult, GestorTramite, Remito, TramiteListParams, TramiteListResult } from '@shared/types';
+import type { ExcelImportResult, GestorTramite, Remito, TramiteDatosUpdate, TramiteListParams, TramiteListResult } from '@shared/types';
 import { apiClient } from './client';
 
 export async function importarExcel(file: File): Promise<ExcelImportResult> {
@@ -28,6 +28,14 @@ export async function enviarSuats(ids: number[]): Promise<GestorTramite[]> {
 
 export async function enviarARemito(id: number): Promise<GestorTramite> {
   const { data } = await apiClient.patch<{ tramite: GestorTramite }>(`/api/tramites/${id}/enviar-remito`);
+  return data.tramite;
+}
+
+export async function actualizarDatosTramite(
+  id: number,
+  datos: TramiteDatosUpdate
+): Promise<GestorTramite> {
+  const { data } = await apiClient.patch<{ tramite: GestorTramite }>(`/api/tramites/${id}/datos`, datos);
   return data.tramite;
 }
 

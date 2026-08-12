@@ -14,6 +14,33 @@ function splitCuit(cuit: string): { tipocuit: string; nrocuit: string } {
   return { tipocuit: clean.substring(0, 2), nrocuit: clean.substring(2) };
 }
 
+// Actualizar nombre y/o cuit de una persona existente (por id_persona).
+export async function dbUpdatePersona(
+  id: number,
+  data: { nombre?: string; cuit?: string }
+): Promise<void> {
+  const pool = await getPool();
+  const sets: string[] = [];
+  const req = pool.request().input('id', sql.Int, id);
+
+  if (data.nombre !== undefined) {
+    const { apellido, nombrePart } = splitNombre(data.nombre);
+    sets.push('Apellido = @apellido', 'Nombre = @nombre');
+    req.input('apellido', sql.NVarChar, apellido);
+    req.input('nombre',   sql.NVarChar, nombrePart);
+  }
+  if (data.cuit !== undefined) {
+    const { tipocuit, nrocuit } = splitCuit(data.cuit);
+    sets.push('tipocuit = @tipocuit', 'nrocuit = @nrocuit');
+    req.input('tipocuit', sql.NVarChar, tipocuit);
+    req.input('nrocuit',  sql.NVarChar, nrocuit);
+  }
+
+  if (sets.length > 0) {
+    await req.query(`UPDATE gestor_personas SET ${sets.join(', ')} WHERE id_persona = @id`);
+  }
+}
+
 // UPSERT persona por (tipocuit + nrocuit + id_gestor). Devuelve el id_persona resultante.
 export async function dbUpsertPersona(
   data: Omit<GestorPersona, 'id'>

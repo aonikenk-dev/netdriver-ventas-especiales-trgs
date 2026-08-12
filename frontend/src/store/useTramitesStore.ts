@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import type { EstadoTramite, ExcelImportRowError, GestorTramite } from '@shared/types';
+import type { EstadoTramite, ExcelImportRowError, GestorTramite, TramiteDatosUpdate } from '@shared/types';
 import {
   actualizarFormularios,
+  actualizarDatosTramite as apiActualizarDatos,
   enviarSuats,
   importarExcel,
   listarTramites,
@@ -45,6 +46,7 @@ interface TramitesState {
   enviarAlWs: (ids: number[]) => Promise<void>;
   enviarARemito: (id: number) => Promise<void>;
   descartar: (id: number) => Promise<void>;
+  actualizarDatos: (id: number, datos: TramiteDatosUpdate) => Promise<void>;
   removerDeRemito: (ids: number[]) => void;
   limpiarErroresExcel: () => void;
 }
@@ -137,6 +139,14 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
   descartar: async (id) => {
     const tramite = await apiDescartar(id);
     set((s) => ({ tramites: s.tramites.map((t) => (t.id === id ? tramite : t)) }));
+  },
+
+  actualizarDatos: async (id, datos) => {
+    const tramite = await apiActualizarDatos(id, datos);
+    set((s) => ({
+      tramites: s.tramites.map((t) => (t.id === id ? tramite : t)),
+      tramitesParaRemito: s.tramitesParaRemito.map((t) => (t.id === id ? tramite : t)),
+    }));
   },
 
   removerDeRemito: (ids) => {

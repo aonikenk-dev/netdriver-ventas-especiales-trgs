@@ -7,8 +7,11 @@ import { findTramite, tramitesStore } from '../mocks/data.js';
 import {
   dbListarTramites, dbFindTramite, dbUpdateFormulario,
   dbEnviarARemito, dbSetEnviando, dbSetOk, dbSetError,
-  dbSetDescartado, dbInsertFormulario, dbGetFormulario,
+  dbSetDescartado, dbInsertFormulario, dbGetFormulario, dbUpdateCodigoClase,
 } from '../db/tramites.js';
+import { dbUpdateAuto, dbGetChasisExistentes } from '../db/autos.js';
+import { dbUpdatePersona } from '../db/personas.js';
+import type { TramiteDatosUpdate } from '../../../shared/types/index.js';
 import type { TramiteLog, TrgDatosTramite } from '../../../shared/types/index.js';
 
 const router = Router();
@@ -121,6 +124,100 @@ router.patch('/:id/descartar', async (req, res) => {
   } catch (err) {
     console.error('[PATCH /tramites/:id/descartar]', err);
     res.status(500).json({ error: 'Error al descartar el tramite' });
+  }
+});
+
+// PATCH /api/tramites/:id/datos — edicion completa de datos (solo pendiente/error)
+router.patch('/:id/datos', async (req, res) => {
+  const id = Number(req.params.id);
+  const body = req.body as TramiteDatosUpdate;
+
+  if (MOCKS) {
+    const tramite = findTramite(id);
+    if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
+    if (tramite.estado !== 'pendiente' && tramite.estado !== 'error') {
+      return res.status(400).json({ error: 'Solo se pueden editar tramites en estado pendiente o error' });
+    }
+    // Validar unicidad de nroChasis si cambió
+    if (body.nroChasis !== undefined && body.nroChasis !== tramite.auto.nroChasis) {
+      const duplicado = tramitesStore.find(
+        (t) => t.auto.nroChasis === body.nroChasis && t.id !== id
+      );
+      if (duplicado) {
+        return res.status(409).json({
+          error: `El número de chasis '${body.nroChasis}' ya está registrado en el trámite #${duplicado.id}`,
+        });
+      }
+      tramite.auto.nroChasis = body.nroChasis;
+      tramite.auto.codigoClase = body.nroChasis.charAt(0) === '8' ? 6801 : 6802;
+    }
+    // Auto
+    if (body.facturaNro      !== undefined) tramite.auto.facturaNro      = body.facturaNro;
+    if (body.facturaFecha    !== undefined) tramite.auto.facturaFecha    = body.facturaFecha;
+    if (body.marcaChasis     !== undefined) tramite.auto.marcaChasis     = body.marcaChasis;
+    if (body.modelo          !== undefined) tramite.auto.modelo          = body.modelo;
+    if (body.nroMotor        !== undefined) tramite.auto.nroMotor        = body.nroMotor;
+    if (body.marcaMotor      !== undefined) tramite.auto.marcaMotor      = body.marcaMotor;
+    if (body.ano             !== undefined) tramite.auto.ano             = body.ano;
+    if (body.codFabrica      !== undefined) tramite.auto.codFabrica      = body.codFabrica;
+    if (body.facturaMonto    !== undefined) tramite.auto.facturaMonto    = body.facturaMonto;
+    if (body.certificadoFabrica !== undefined) tramite.auto.certificadoFabrica = body.certificadoFabrica;
+    // Titular
+    if (body.nombre !== undefined) tramite.titular.nombre = body.nombre;
+    if (body.cuit   !== undefined) tramite.titular.cuit   = body.cuit;
+    // Formularios
+    if (body.formularioNro01 !== undefined) tramite.formularioNro01 = body.formularioNro01;
+    if (body.formularioNro12 !== undefined) tramite.formularioNro12 = body.formularioNro12;
+    return res.json({ tramite });
+  }
+
+  // --- DB ---
+  try {
+    const tramite = await dbFindTramite(id);
+    if (!tramite) return res.status(404).json({ error: 'Tramite no encontrado' });
+    if (tramite.estado !== 'pendiente' && tramite.estado !== 'error') {
+      return res.status(400).json({ error: 'Solo se pueden editar tramites en estado pendiente o error' });
+    }
+
+    const autoData: Parameters<typeof dbUpdateAuto>[1] = {};
+
+    // Validar unicidad de nroChasis si cambió
+    if (body.nroChasis !== undefined && body.nroChasis !== tramite.auto.nroChasis) {
+      const existentes = await dbGetChasisExistentes([body.nroChasis]);
+      if (existentes.length > 0) {
+        return res.status(409).json({
+          error: `El número de chasis '${body.nroChasis}' ya está registrado en otro trámite`,
+        });
+      }
+      autoData.nroChasis = body.nroChasis;
+      // Actualizar CodigoClase derivado del nuevo chasis
+      const nuevoCodigoClase = body.nroChasis.charAt(0) === '8' ? 6801 : 6802;
+      await dbUpdateCodigoClase(id, nuevoCodigoClase as 6801 | 6802);
+    }
+
+    if (body.facturaNro      !== undefined) autoData.facturaNro      = body.facturaNro;
+    if (body.facturaFecha    !== undefined) autoData.facturaFecha    = body.facturaFecha;
+    if (body.marcaChasis     !== undefined) autoData.marcaChasis     = body.marcaChasis;
+    if (body.modelo          !== undefined) autoData.modelo          = body.modelo;
+    if (body.nroMotor        !== undefined) autoData.nroMotor        = body.nroMotor;
+    if (body.marcaMotor      !== undefined) autoData.marcaMotor      = body.marcaMotor;
+    if (body.ano             !== undefined) autoData.ano             = body.ano;
+    if (body.codFabrica      !== undefined) autoData.codFabrica      = body.codFabrica;
+    if (body.facturaMonto    !== undefined) autoData.facturaMonto    = body.facturaMonto;
+    if (body.certificadoFabrica !== undefined) autoData.certificadoFabrica = body.certificadoFabrica;
+
+    await dbUpdateAuto(tramite.auto.id, autoData);
+    await dbUpdatePersona(tramite.titular.id, { nombre: body.nombre, cuit: body.cuit });
+
+    const tramiteData: Parameters<typeof dbUpdateFormulario>[1] = {};
+    if (body.formularioNro01 !== undefined) tramiteData.formularioNro01 = body.formularioNro01;
+    if (body.formularioNro12 !== undefined) tramiteData.formularioNro12 = body.formularioNro12;
+
+    const actualizado = await dbUpdateFormulario(id, tramiteData);
+    res.json({ tramite: actualizado });
+  } catch (err) {
+    console.error('[PATCH /tramites/:id/datos]', err);
+    res.status(500).json({ error: 'Error al actualizar los datos del tramite' });
   }
 });
 

@@ -285,6 +285,17 @@ export async function dbInsertFormulario(
 }
 
 // ---------------------------------------------------------------------------
+// Actualizar CodigoClase en gestor_tramites (cuando cambia nroChasis)
+// ---------------------------------------------------------------------------
+export async function dbUpdateCodigoClase(id: number, codigoClase: CodigoClase): Promise<void> {
+  const pool = await getPool();
+  await pool.request()
+    .input('id',          sql.Int,      id)
+    .input('codigoClase', sql.NVarChar, String(codigoClase))
+    .query('UPDATE gestor_tramites SET CodigoClase = @codigoClase WHERE id_tramite = @id');
+}
+
+// ---------------------------------------------------------------------------
 // Obtener un formulario especifico
 // ---------------------------------------------------------------------------
 export async function dbGetFormulario(

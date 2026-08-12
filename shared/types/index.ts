@@ -186,3 +186,24 @@ export type TipoFormularioDescarga =
   | 'DDJJ';
 
 export type TipoPdfLocal = 'factura' | 'certificado';
+
+export interface TramiteDatosUpdate {
+  // Vehículo
+  nroChasis?: string;
+  facturaNro?: string;
+  facturaFecha?: string;
+  marcaChasis?: string;
+  modelo?: string;
+  nroMotor?: string;
+  marcaMotor?: string;
+  ano?: string;
+  codFabrica?: string;
+  facturaMonto?: string;
+  certificadoFabrica?: string;
+  // Titular
+  nombre?: string;
+  cuit?: string;
+  // Formularios
+  formularioNro01?: string;
+  formularioNro12?: string;
+}

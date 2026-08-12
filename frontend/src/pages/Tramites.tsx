@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown,
-  Archive, Eraser, ListOrdered, Printer, RotateCcw, ScrollText, Send, Loader2,
+  Archive, Eraser, Eye, ListOrdered, Pencil, Printer, RotateCcw, ScrollText, Send, Loader2,
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ModalDocumentos } from '@/components/ModalDocumentos';
 import { ModalLogs } from '@/components/ModalLogs';
+import { ModalTramiteDetalle } from '@/components/ModalTramiteDetalle';
 import { useTramitesStore } from '@/store/useTramitesStore';
 import type { EstadoTramite, CodigoClase, GestorTramite } from '@shared/types';
 
@@ -64,13 +65,14 @@ export function Tramites() {
   const {
     tramites, loading, enviando, pagination, filters,
     fetchTramites, setPage, setFilters, importarDesdeExcel, actualizarFormulario, enviarAlWs,
-    enviarARemito, descartar,
+    enviarARemito, descartar, actualizarDatos,
   } = useTramitesStore();
 
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const [searchInput, setSearchInput] = useState('');
   const [modalDocs, setModalDocs] = useState<GestorTramite | null>(null);
   const [modalLogs, setModalLogs] = useState<GestorTramite | null>(null);
+  const [modalDetalle, setModalDetalle] = useState<GestorTramite | null>(null);
   const [procesando, setProcesando] = useState(false);
   const [enviandoSuats, setEnviandoSuats] = useState<Set<number>>(new Set());
   const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
@@ -518,6 +520,17 @@ export function Tramites() {
                           </Button>
                         </>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title={t.estado === 'pendiente' || t.estado === 'error' ? 'Ver / editar datos' : 'Ver datos'}
+                        onClick={() => setModalDetalle(t)}
+                      >
+                        {t.estado === 'pendiente' || t.estado === 'error'
+                          ? <Pencil size={14} />
+                          : <Eye size={14} />
+                        }
+                      </Button>
                       <Button size="sm" variant="ghost" title="Ver logs" onClick={() => setModalLogs(t)}>
                         <ScrollText size={14} />
                       </Button>
@@ -552,6 +565,11 @@ export function Tramites() {
 
       <ModalDocumentos tramite={modalDocs} onClose={() => setModalDocs(null)} />
       <ModalLogs tramite={modalLogs} onClose={() => setModalLogs(null)} />
+      <ModalTramiteDetalle
+        tramite={modalDetalle}
+        onClose={() => setModalDetalle(null)}
+        onSave={actualizarDatos}
+      />
     </>
   );
 }
