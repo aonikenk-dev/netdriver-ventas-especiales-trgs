@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { Tramites } from '@/pages/Tramites';
 import { Documentos } from '@/pages/Documentos';
 import { Remitos } from '@/pages/Remitos';
-import { LogsExcel } from '@/pages/LogsExcel';
+import { Logs } from '@/pages/Logs';
 import { Configuracion } from '@/pages/Configuracion';
 
 export default function App() {
@@ -17,7 +17,7 @@ export default function App() {
           <Route path="/tramites" element={<Tramites />} />
           <Route path="/documentos" element={<Documentos />} />
           <Route path="/remitos" element={<Remitos />} />
-          <Route path="/logs-excel" element={<LogsExcel />} />
+          <Route path="/logs" element={<Logs />} />
           <Route path="/configuracion" element={<Configuracion />} />
         </Route>
       </Routes>

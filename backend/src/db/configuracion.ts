@@ -1,7 +1,10 @@
 import { getPool, sql } from './index.js';
 
 const DEFAULTS: Record<string, string> = {
-  PDF_DIR: process.env.PDF_DIR ?? '',
+  PDF_DIR:           process.env.PDF_DIR ?? '',
+  FACTURAS_DIR:      process.env.FACTURAS_DIR ?? '',
+  CERTIFICADOS_DIR:  process.env.CERTIFICADOS_DIR ?? '',
+  FACTURA_NRO_REGEX: process.env.FACTURA_NRO_REGEX ?? String.raw`F[-\s]?\d{2,8}`,
 };
 
 // Caché en memoria — se invalida al guardar

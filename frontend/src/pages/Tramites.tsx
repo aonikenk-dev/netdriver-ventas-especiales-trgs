@@ -6,6 +6,8 @@ import {
 import { toast } from '@/components/ui/sonner';
 import { Topbar } from '@/components/layout/Topbar';
 import { UploadExcel } from '@/components/UploadExcel';
+import { UploadZone } from '@/components/UploadZone';
+import { uploadFacturas, uploadCertificados } from '@/api/upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -69,7 +71,7 @@ export function Tramites() {
   const {
     tramites, loading, enviando, pagination, filters,
     fetchTramites, setPage, setFilters, importarDesdeExcel, actualizarFormulario, enviarAlWs,
-    enviarARemito, descartar, actualizarDatos,
+    enviarARemito, descartar, actualizarDatos, agregarErroresFacturas, agregarErroresCertificados,
   } = useTramitesStore();
 
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
@@ -78,6 +80,8 @@ export function Tramites() {
   const [modalLogs, setModalLogs] = useState<GestorTramite | null>(null);
   const [modalDetalle, setModalDetalle] = useState<GestorTramite | null>(null);
   const [procesando, setProcesando] = useState(false);
+  const [procesandoFacturas, setProcesandoFacturas] = useState(false);
+  const [procesandoCertificados, setProcesandoCertificados] = useState(false);
   const [enviandoSuats, setEnviandoSuats] = useState<Set<number>>(new Set());
   const [enviandoARemito, setEnviandoARemito] = useState<Set<number>>(new Set());
   const [enviandoLote, setEnviandoLote] = useState(false);
@@ -167,6 +171,42 @@ export function Tramites() {
       toast.error('No se pudo procesar el Excel');
     } finally {
       setProcesando(false);
+    }
+  };
+
+  const handleFacturas = async (file: File) => {
+    setProcesandoFacturas(true);
+    try {
+      const result = await uploadFacturas(file);
+      if (result.errores.length > 0) agregarErroresFacturas(result.errores);
+      toast.success(`${result.resultados.length} factura(s) guardadas`, {
+        description: result.errores.length > 0
+          ? `${result.errores.length} página(s) con error — ver tab Logs`
+          : undefined,
+      });
+    } catch (e) {
+      const msg = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Error al procesar facturas';
+      toast.error(msg);
+    } finally {
+      setProcesandoFacturas(false);
+    }
+  };
+
+  const handleCertificados = async (file: File) => {
+    setProcesandoCertificados(true);
+    try {
+      const result = await uploadCertificados(file);
+      if (result.errores.length > 0) agregarErroresCertificados(result.errores);
+      toast.success(`${result.total} certificado(s) guardados`, {
+        description: result.errores.length > 0
+          ? `${result.errores.length} archivo(s) con error — ver tab Logs`
+          : undefined,
+      });
+    } catch (e) {
+      const msg = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Error al procesar certificados';
+      toast.error(msg);
+    } finally {
+      setProcesandoCertificados(false);
     }
   };
 
@@ -332,8 +372,30 @@ export function Tramites() {
           </div>
         )}
 
-        <div className="section-card upload-card">
-          <UploadExcel onFileSelected={handleImport} disabled={procesando} />
+        <div className="upload-grid">
+          <div className="section-card upload-card">
+            <UploadExcel onFileSelected={handleImport} disabled={procesando} />
+          </div>
+          <div className="section-card upload-card">
+            <UploadZone
+              accept=".pdf"
+              title="Cargar facturas (.pdf)"
+              hint="PDF multipágina — una factura por página, se divide automáticamente"
+              onFileSelected={handleFacturas}
+              loading={procesandoFacturas}
+              disabled={procesandoFacturas}
+            />
+          </div>
+          <div className="section-card upload-card">
+            <UploadZone
+              accept=".zip"
+              title="Cargar certificados (.zip)"
+              hint="ZIP con los certificados de fábrica — se extrae en el directorio configurado"
+              onFileSelected={handleCertificados}
+              loading={procesandoCertificados}
+              disabled={procesandoCertificados}
+            />
+          </div>
         </div>
 
         <div className="toolbar">

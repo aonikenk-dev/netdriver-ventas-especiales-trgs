@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { EstadoTramite, ExcelImportRowError, GestorTramite, TramiteDatosUpdate } from '@shared/types';
+import type { FacturaUploadError, CertificadoUploadError } from '@/api/upload';
 import {
   actualizarFormularios,
   actualizarDatosTramite as apiActualizarDatos,
@@ -27,6 +28,9 @@ interface PaginationState {
   totalPages: number;
 }
 
+export type FacturaErrorLog = FacturaUploadError & { cargadoEn: string };
+export type CertificadoErrorLog = CertificadoUploadError & { cargadoEn: string };
+
 interface TramitesState {
   tramites: GestorTramite[];
   tramitesParaRemito: GestorTramite[];
@@ -35,6 +39,8 @@ interface TramitesState {
   pagination: PaginationState;
   filters: FiltersState;
   erroresExcel: ExcelImportRowError[];
+  erroresFacturas: FacturaErrorLog[];
+  erroresCertificados: CertificadoErrorLog[];
   fetchTramites: () => Promise<void>;
   setPage: (page: number) => void;
   setFilters: (f: Partial<FiltersState>) => void;
@@ -49,6 +55,10 @@ interface TramitesState {
   actualizarDatos: (id: number, datos: TramiteDatosUpdate) => Promise<void>;
   removerDeRemito: (ids: number[]) => void;
   limpiarErroresExcel: () => void;
+  agregarErroresFacturas: (errs: FacturaUploadError[]) => void;
+  agregarErroresCertificados: (errs: CertificadoUploadError[]) => void;
+  limpiarErroresFacturas: () => void;
+  limpiarErroresCertificados: () => void;
 }
 
 export const useTramitesStore = create<TramitesState>((set, get) => ({
@@ -59,6 +69,8 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
   pagination: { page: 1, total: 0, totalPages: 1 },
   filters: { search: '', estado: 'all', ni: 'all', sortBy: 'creadoEn', sortDir: 'desc', pageSize: 10 },
   erroresExcel: [],
+  erroresFacturas: [],
+  erroresCertificados: [],
 
   fetchTramites: async () => {
     const { filters, pagination } = get();
@@ -154,4 +166,22 @@ export const useTramitesStore = create<TramitesState>((set, get) => ({
   },
 
   limpiarErroresExcel: () => set({ erroresExcel: [] }),
+
+  agregarErroresFacturas: (errs) => {
+    const cargadoEn = new Date().toISOString();
+    set((s) => ({
+      erroresFacturas: [...s.erroresFacturas, ...errs.map((e) => ({ ...e, cargadoEn }))],
+    }));
+  },
+
+  agregarErroresCertificados: (errs) => {
+    const cargadoEn = new Date().toISOString();
+    set((s) => ({
+      erroresCertificados: [...s.erroresCertificados, ...errs.map((e) => ({ ...e, cargadoEn }))],
+    }));
+  },
+
+  limpiarErroresFacturas: () => set({ erroresFacturas: [] }),
+
+  limpiarErroresCertificados: () => set({ erroresCertificados: [] }),
 }));

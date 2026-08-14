@@ -2,6 +2,9 @@ import { apiClient } from './client';
 
 export interface Configuracion {
   PDF_DIR: string;
+  FACTURAS_DIR: string;
+  CERTIFICADOS_DIR: string;
+  FACTURA_NRO_REGEX: string;
   [key: string]: string;
 }
 

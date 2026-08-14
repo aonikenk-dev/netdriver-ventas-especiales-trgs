@@ -35,6 +35,31 @@
     font-size: 0.75rem;
     color: rgba($color-ink, 0.45);
   }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &__icon--spin {
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .status-badge {
@@ -188,7 +213,12 @@
 }
 
 .upload-card {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0; // el margen lo maneja .upload-grid
+
+  // standalone (fuera del grid), por compatibilidad con otros usos
+  &:not(.upload-grid &) {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .table-empty {
@@ -726,13 +756,13 @@
     font-family: $font-display;
     font-size: 0.95rem;
     font-weight: 700;
-    color: $color-white;
+    color: $color-ink;
     margin: 0;
   }
 
   &__desc {
     font-size: 0.82rem;
-    color: rgba($color-white, 0.5);
+    color: rgba($color-ink, 0.5);
     margin: -0.5rem 0 0;
   }
 
@@ -752,7 +782,7 @@
   &__label {
     font-size: 0.8rem;
     font-weight: 600;
-    color: rgba($color-white, 0.7);
+    color: rgba($color-ink, 0.7);
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
@@ -764,11 +794,11 @@
 
   &__hint {
     font-size: 0.78rem;
-    color: rgba($color-white, 0.4);
+    color: rgba($color-ink, 0.4);
 
     code {
       font-family: $font-mono;
-      background: rgba($color-white, 0.07);
+      background: rgba($color-ink, 0.07);
       padding: 0.1em 0.35em;
       border-radius: 3px;
     }
@@ -784,7 +814,7 @@
 
   code {
     font-family: $font-mono;
-    color: rgba($color-white, 0.6);
+    color: rgba($color-ink, 0.6);
   }
 }
 
@@ -1062,3 +1092,33 @@
     letter-spacing: 0.02em;
   }
 }
+
+// ─── Logs ─────────────────────────────────────────────────────────────────────
+.logs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $color-ink;
+    margin: 0 0 0.2rem;
+  }
+
+  &__desc {
+    font-size: 0.82rem;
+    color: rgba($color-ink, 0.5);
+    margin: 0;
+  }
+}
+

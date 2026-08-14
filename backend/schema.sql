@@ -133,6 +133,9 @@ CREATE TABLE configuracion (
   valor   NVARCHAR(500)
 );
 INSERT INTO configuracion (clave, valor) VALUES ('PDF_DIR', '');
+INSERT INTO configuracion (clave, valor) VALUES ('FACTURAS_DIR', '');
+INSERT INTO configuracion (clave, valor) VALUES ('CERTIFICADOS_DIR', '');
+INSERT INTO configuracion (clave, valor) VALUES ('FACTURA_NRO_REGEX', 'F[-\s]?\d{2,8}');
 GO
 
 -- ---------------------------------------------------------------------------

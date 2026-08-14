@@ -7,12 +7,14 @@ const NAV_ITEMS = [
   { to: '/tramites', label: 'Tramites', icon: FileSpreadsheet, badge: false },
   { to: '/documentos', label: 'Documentos', icon: FolderOpen, badge: false },
   { to: '/remitos', label: 'Remitos', icon: Truck, badge: false },
-  { to: '/logs-excel', label: 'Logs Excel', icon: FileWarning, badge: true },
+  { to: '/logs', label: 'Logs', icon: FileWarning, badge: true },
   { to: '/configuracion', label: 'Configuracion', icon: Settings, badge: false },
 ];
 
 export function AppShell() {
   const erroresExcel = useTramitesStore((s) => s.erroresExcel);
+  const erroresFacturas = useTramitesStore((s) => s.erroresFacturas);
+  const erroresCertificados = useTramitesStore((s) => s.erroresCertificados);
 
   return (
     <div className="app-shell">
@@ -31,8 +33,10 @@ export function AppShell() {
             >
               <Icon />
               {label}
-              {badge && erroresExcel.length > 0 && (
-                <span className="app-nav-link__badge">{erroresExcel.length}</span>
+              {badge && (erroresExcel.length + erroresFacturas.length + erroresCertificados.length) > 0 && (
+                <span className="app-nav-link__badge">
+                  {erroresExcel.length + erroresFacturas.length + erroresCertificados.length}
+                </span>
               )}
             </NavLink>
           ))}
