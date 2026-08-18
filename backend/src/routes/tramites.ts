@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import PDFDocument from 'pdfkit';
-import { filterOperatorErrors } from '../services/sanitize.js';
 import * as trgsService from '../services/trgsService.js';
 import { resolverMensajeError } from '../services/trgsErrores.js';
+import { buildTrgPayload } from '../services/buildPayload.js';
 import { findTramite, tramitesStore } from '../mocks/data.js';
 import {
   dbListarTramites, dbFindTramite, dbUpdateFormulario,
@@ -13,8 +13,7 @@ import { dbUpdateAuto, dbGetChasisExistentes } from '../db/autos.js';
 import { dbGetRemitoAbierto, dbAddTramiteToRemito } from '../db/remitos.js';
 import { findRemitoAbierto } from '../mocks/data.js';
 import { dbUpdatePersona } from '../db/personas.js';
-import type { TramiteDatosUpdate } from '../../../shared/types/index.js';
-import type { TramiteLog, TrgDatosTramite } from '../../../shared/types/index.js';
+import type { GestorFormulario, TramiteLog, TramiteDatosUpdate } from '../../../shared/types/index.js';
 
 const router = Router();
 const MOCKS = process.env.USE_MOCKS !== 'false';
@@ -273,20 +272,6 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-function datosTramiteDesde(titularNombre: string, cuit: string): TrgDatosTramite {
-  return {
-    traTelefono: '011-4000-0000',
-    traCalle: 'AV SIEMPRE VIVA',
-    traNumero: '742',
-    traEmail: `${titularNombre.split(',')[0].trim().toLowerCase().replace(/\s+/g, '.')}@mail.com`,
-    traOcupacion: 'EMPLEADO',
-    traCP: '1900',
-    traLugarNacimiento: 'LA PLATA',
-    traDocumento: Number(cuit.slice(2, -1)) || 0,
-    traCuit: Number(cuit) || 0,
-  };
-}
-
 // POST /api/tramites/enviar  { ids: number[] }
 router.post('/enviar', async (req, res) => {
   const { ids } = req.body as { ids: number[] };
@@ -296,7 +281,6 @@ router.post('/enviar', async (req, res) => {
 
   const resultados = [];
   const now = () => new Date().toISOString();
-  const uswID = process.env.TRGS_USW_ID ?? '000005';
 
   for (const id of ids) {
     const tramite = MOCKS ? findTramite(id) : await dbFindTramite(id).catch(() => undefined);
@@ -314,7 +298,7 @@ router.post('/enviar', async (req, res) => {
       detalle: `respuestaID: ${ecoResp.respuestaID}`,
     });
 
-    const sesionResp = await trgsService.abrirSesion(uswID);
+    const sesionResp = await trgsService.abrirSesion();
     logs.push({
       timestamp: now(),
       nivel: sesionResp.rspID === 1 ? 'info' : 'error',
@@ -328,8 +312,12 @@ router.post('/enviar', async (req, res) => {
     const { ingID } = sesionResp;
 
     try {
-      const datos = filterOperatorErrors(datosTramiteDesde(tramite.titular.nombre, tramite.titular.cuit));
-      const respuesta = await trgsService.generarTramite01(ingID, datos);
+      const payload = buildTrgPayload(
+        tramite,
+        tramite.formularioNro01 ?? '',
+        tramite.formularioNro12 ?? '',
+      );
+      const respuesta = await trgsService.generarTramite01(ingID, payload);
 
       if (respuesta.rspID === 1) {
         if (MOCKS) {
@@ -346,10 +334,18 @@ router.post('/enviar', async (req, res) => {
           detalle: `traID: ${respuesta.traID} — ${respuesta.rspDescrip}`,
         });
 
-        const tipos = tramite.auto.codigoClase === 6802
-          ? (['F01importado', 'F12'] as const)
-          : (['F01', 'F12'] as const);
-        const formularios = await trgsService.obtenerFormularios(respuesta.traID, [...tipos]);
+        const tipos: GestorFormulario['tipo'][] = tramite.auto.codigoClase === 6802
+          ? ['F01importado', 'F12']
+          : ['F01', 'F12'];
+
+        const formularios: GestorFormulario[] = [];
+        for (const tipo of tipos) {
+          const nroForm = tipo === 'F12'
+            ? (tramite.formularioNro12 ?? '')
+            : (tramite.formularioNro01 ?? '');
+          const f = await trgsService.obtenerFormularios(ingID, respuesta.traID, tipo, nroForm);
+          formularios.push(f);
+        }
 
         if (MOCKS) {
           tramite.formularios = formularios.map((f) => ({ ...f, idTramite: tramite.id }));
