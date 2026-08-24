@@ -59,13 +59,11 @@ function resolverDirectorio(base: string, sub: string): string {
   return dir;
 }
 
-function extraerNroFactura(texto: string, regex: string): string | null {
+// Extrae el primer match del regex sobre el texto. Para VINs, normaliza a mayúsculas.
+function extraerChasis(texto: string, regex: string): string | null {
   try {
     const match = texto.match(new RegExp(regex, 'i'));
-    if (match?.[0]) {
-      // Normalizar: quitar espacios alrededor del guión → "0065 - 00697045" → "0065-00697045"
-      return match[0].trim().replace(/\s*[-–—−]\s*/g, '-').replace(/\s+/g, '');
-    }
+    if (match?.[0]) return match[0].trim().toUpperCase();
   } catch { /* regex inválido */ }
   return null;
 }
@@ -73,7 +71,7 @@ function extraerNroFactura(texto: string, regex: string): string | null {
 // ---------------------------------------------------------------------------
 // POST /api/upload/facturas
 // Recibe un PDF multi-página; divide por página y guarda cada una con el
-// número de factura extraído del texto como nombre de archivo.
+// número de chasis (VIN) extraído del texto como nombre de archivo.
 // ---------------------------------------------------------------------------
 router.post('/facturas', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
@@ -84,9 +82,10 @@ router.post('/facturas', upload.single('file'), async (req, res) => {
 
   if (!facturasBase) return res.status(400).json({ error: 'Directorio de facturas no configurado (ver Configuración)' });
 
+  // Regex para VIN: 17 caracteres alfanuméricos en mayúsculas (estándar internacional)
   const regexPattern = MOCKS
-    ? String.raw`\d{4}\s*[-–—−]\s*\d{7,8}`
-    : (await dbGetValor('FACTURA_NRO_REGEX')) || String.raw`\d{4}\s*[-–—−]\s*\d{7,8}`;
+    ? String.raw`[A-Z0-9]{17}`
+    : (await dbGetValor('FACTURA_NRO_REGEX')) || String.raw`[A-Z0-9]{17}`;
 
   const outputDir = resolverDirectorio(facturasBase, '');
 
@@ -97,7 +96,7 @@ router.post('/facturas', upload.single('file'), async (req, res) => {
     // Extraer texto de cada página del PDF original antes de dividirlo.
     const textosPorPagina = await getTextPerPage(req.file.buffer, pageCount);
 
-    const resultados: { pagina: number; facturaNro: string; fileName: string }[] = [];
+    const resultados: { pagina: number; nroChasis: string; fileName: string }[] = [];
     const errores: { pagina: number; motivo: string }[] = [];
 
     for (let i = 0; i < pageCount; i++) {
@@ -109,11 +108,11 @@ router.post('/facturas', upload.single('file'), async (req, res) => {
         const pageBytes = await singleDoc.save();
 
         const text = textosPorPagina[i] ?? '';
-        const facturaNro = extraerNroFactura(text, regexPattern) ?? `pagina-${i + 1}`;
+        const nroChasis = extraerChasis(text, regexPattern) ?? `pagina-${i + 1}`;
 
-        const fileName = `${facturaNro}.pdf`;
+        const fileName = `${nroChasis}.pdf`;
         fs.writeFileSync(path.join(outputDir, fileName), Buffer.from(pageBytes));
-        resultados.push({ pagina: i + 1, facturaNro, fileName });
+        resultados.push({ pagina: i + 1, nroChasis, fileName });
       } catch (err) {
         errores.push({ pagina: i + 1, motivo: err instanceof Error ? err.message : String(err) });
       }
@@ -154,8 +153,12 @@ router.post('/certificados', upload.single('file'), async (req, res) => {
       if (entry.isDirectory) continue;
       try {
         const data = entry.getData();
-        // Usar solo el nombre base del archivo (ignorar directorios dentro del ZIP)
-        const fileName = path.basename(entry.entryName);
+        const baseName = path.basename(entry.entryName);
+        const parsed = path.parse(baseName);
+        // Usar solo la parte antes del primer guion bajo como nombre de archivo.
+        // Ejemplo: "9BGEA48K0TG223800_I_certificate.pdf" → "9BGEA48K0TG223800.pdf"
+        const truncatedName = parsed.name.split('_')[0];
+        const fileName = `${truncatedName}${parsed.ext || '.pdf'}`;
         fs.writeFileSync(path.join(outputDir, fileName), data);
         guardados.push(fileName);
       } catch (err) {

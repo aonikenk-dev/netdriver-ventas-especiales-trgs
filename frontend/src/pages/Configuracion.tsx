@@ -18,7 +18,7 @@ export function Configuracion() {
       .then((cfg) => {
         setFacturasDir(cfg.FACTURAS_DIR ?? '');
         setCertificadosDir(cfg.CERTIFICADOS_DIR ?? '');
-        setFacturaNroRegex(cfg.FACTURA_NRO_REGEX ?? String.raw`\d{4}\s*[-–]\s*\d{7,8}`);
+        setFacturaNroRegex(cfg.FACTURA_NRO_REGEX ?? String.raw`[A-Z0-9]{17}`);
       })
       .catch(() => toast.error('No se pudo cargar la configuración'))
       .finally(() => setLoading(false));
@@ -81,12 +81,12 @@ export function Configuracion() {
                 <CheckCircle size={13} />
                 <span>
                   Ejemplo de ruta resuelta:{' '}
-                  <code>{facturasDir.replace(/[/\\]$/, '')}/2026-08-13/0065-00697045.pdf</code>
+                  <code>{facturasDir.replace(/[/\\]$/, '')}/2026-08-13/9BGEA48K0TG223800.pdf</code>
                 </span>
               </div>
             )}
             <span className="config-field__hint">
-              Las facturas se guardan con el número de factura como nombre de archivo.
+              Las facturas se guardan con el número de chasis (VIN) como nombre de archivo.
             </span>
           </div>
 
@@ -113,26 +113,26 @@ export function Configuracion() {
               </div>
             )}
             <span className="config-field__hint">
-              Los certificados se extraen del ZIP y se guardan con su nombre original.
+              Los certificados se extraen del ZIP y se guardan con el número de chasis como nombre (todo antes del primer guion bajo).
             </span>
           </div>
 
           {/* Regex de número de factura */}
           <div className="config-field">
             <label className="config-field__label" htmlFor="factura-regex">
-              Patrón para número de factura
+              Patrón para número de chasis (VIN)
             </label>
             <Input
               id="factura-regex"
               value={loading ? '' : facturaNroRegex}
               disabled={loading}
-              placeholder={String.raw`\d{4}\s*[-–]\s*\d{7,8}`}
+              placeholder={String.raw`[A-Z0-9]{17}`}
               onChange={(e) => setFacturaNroRegex(e.target.value)}
               className="config-field__input font-mono"
             />
             <span className="config-field__hint">
-              Expresión regular (RegEx) para encontrar el número de factura en cada página del PDF.
-              El primer match se usa como nombre de archivo.
+              Expresión regular (RegEx) para encontrar el número de chasis (VIN) en cada página del PDF.
+              El primer match se usa como nombre de archivo. El estándar VIN son 17 caracteres alfanuméricos.
             </span>
           </div>
 

@@ -7,10 +7,14 @@ import { dbGetValor } from '../db/configuracion.js';
 const router = Router();
 const MOCKS = process.env.USE_MOCKS !== 'false';
 
-const PREFIJO: Record<string, string> = { factura: 'F', certificado: 'C' };
+const CONFIG_KEY: Record<string, string> = {
+  factura:      'FACTURAS_DIR',
+  certificado:  'CERTIFICADOS_DIR',
+};
+
 const TITULOS: Record<string, string> = {
-  factura: 'Factura',
-  certificado: 'Certificado de Fabricacion',
+  factura:      'Factura',
+  certificado:  'Certificado de Fabricacion',
 };
 
 function serveMockPdf(res: import('express').Response, titulo: string, chasis: string) {
@@ -25,9 +29,31 @@ function serveMockPdf(res: import('express').Response, titulo: string, chasis: s
   doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`);
   doc.moveDown();
   doc.fontSize(10).fillColor('gray').text(
-    'Documento de muestra. En produccion se sirve desde el directorio PDF_DIR configurado en Configuraciones.'
+    'Documento de muestra. En produccion se sirve desde el directorio configurado en Configuraciones.'
   );
   doc.end();
+}
+
+// Busca {chasis}.pdf en baseDir y en sus subdirectorios inmediatos (subcarpetas de fecha YYYY-MM-DD).
+// Devuelve la ruta completa del primer archivo encontrado, o null si no existe.
+function buscarArchivo(baseDir: string, chasis: string): string | null {
+  const fileName = `${chasis}.pdf`;
+
+  // Primero buscar directamente en la raíz del directorio base
+  const directPath = path.join(baseDir, fileName);
+  if (fs.existsSync(directPath)) return directPath;
+
+  // Luego buscar en cada subcarpeta de un nivel (las subcarpetas de fecha)
+  try {
+    const entries = fs.readdirSync(baseDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const candidate = path.join(baseDir, entry.name, fileName);
+      if (fs.existsSync(candidate)) return candidate;
+    }
+  } catch { /* baseDir inaccesible o no existe */ }
+
+  return null;
 }
 
 // GET /api/documentos/:tipo/:chasis  (factura | certificado)
@@ -40,21 +66,19 @@ router.get('/:tipo/:chasis', async (req, res) => {
     return serveMockPdf(res, titulo, chasis);
   }
 
-  // Leer PDF_DIR desde configuracion
-  const pdfDir = await dbGetValor('PDF_DIR').catch(() => '');
+  const configKey = CONFIG_KEY[tipo];
+  const baseDir = await dbGetValor(configKey).catch(() => '');
 
-  if (!pdfDir) {
-    // Sin directorio configurado → PDF de aviso
+  if (!baseDir) {
     return serveMockPdf(res, titulo, chasis);
   }
 
-  const prefijo = PREFIJO[tipo];
-  const filePath = path.join(pdfDir, `${prefijo}${chasis}.pdf`);
+  const filePath = buscarArchivo(baseDir, chasis);
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath) {
     return res.status(404).json({
-      error: `Archivo no encontrado: ${prefijo}${chasis}.pdf`,
-      directorio: pdfDir,
+      error: `Archivo no encontrado: ${chasis}.pdf`,
+      directorio: baseDir,
     });
   }
 

@@ -12,7 +12,7 @@ export interface CertificadoUploadError {
 
 export interface FacturasUploadResult {
   total: number;
-  resultados: { pagina: number; facturaNro: string; fileName: string }[];
+  resultados: { pagina: number; nroChasis: string; fileName: string }[];
   errores: FacturaUploadError[];
   directorio: string;
 }
