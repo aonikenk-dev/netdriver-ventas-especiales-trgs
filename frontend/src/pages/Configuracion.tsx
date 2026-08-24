@@ -18,7 +18,7 @@ export function Configuracion() {
       .then((cfg) => {
         setFacturasDir(cfg.FACTURAS_DIR ?? '');
         setCertificadosDir(cfg.CERTIFICADOS_DIR ?? '');
-        setFacturaNroRegex(cfg.FACTURA_NRO_REGEX ?? String.raw`F[-\s]?\d{2,8}`);
+        setFacturaNroRegex(cfg.FACTURA_NRO_REGEX ?? String.raw`\d{4}\s*[-–]\s*\d{7,8}`);
       })
       .catch(() => toast.error('No se pudo cargar la configuración'))
       .finally(() => setLoading(false));
@@ -81,7 +81,7 @@ export function Configuracion() {
                 <CheckCircle size={13} />
                 <span>
                   Ejemplo de ruta resuelta:{' '}
-                  <code>{facturasDir.replace(/[/\\]$/, '')}/2026-08-13/F-00123.pdf</code>
+                  <code>{facturasDir.replace(/[/\\]$/, '')}/2026-08-13/0065-00697045.pdf</code>
                 </span>
               </div>
             )}
@@ -126,7 +126,7 @@ export function Configuracion() {
               id="factura-regex"
               value={loading ? '' : facturaNroRegex}
               disabled={loading}
-              placeholder={String.raw`F[-\s]?\d{2,8}`}
+              placeholder={String.raw`\d{4}\s*[-–]\s*\d{7,8}`}
               onChange={(e) => setFacturaNroRegex(e.target.value)}
               className="config-field__input font-mono"
             />

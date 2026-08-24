@@ -1,26 +1,46 @@
 import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createRequire } from 'module';
 import multer from 'multer';
 import { PDFDocument } from 'pdf-lib';
 import { dbGetValor } from '../db/configuracion.js';
 
-// pdf-parse y adm-zip son módulos CJS — se cargan lazy con createRequire para
-// evitar problemas de ESM en el startup (createRequire es seguro en top-level)
+// adm-zip es CJS — se carga lazy con createRequire para compatibilidad ESM
 const _require = createRequire(import.meta.url);
 
-type PdfParseInstance = { load(buf: Buffer): Promise<void>; getText(): Promise<string> };
-type PdfParseModule = { PDFParse: new (opts?: { verbosity?: number }) => PdfParseInstance };
 type AdmZipEntry = { isDirectory: boolean; entryName: string; getData(): Buffer };
 type AdmZipClass = new (buf: Buffer) => { getEntries(): AdmZipEntry[] };
 
-function getPdfParseModule(): PdfParseModule {
-  return _require('pdf-parse') as PdfParseModule;
-}
-
 function getAdmZip(): AdmZipClass {
   return _require('adm-zip') as AdmZipClass;
+}
+
+// Extrae el texto de cada página del PDF usando pdfjs-dist directamente.
+// pdfjs-dist v5 es ESM-only → dynamic import; getTextContent() no necesita canvas ni viewport.
+async function getTextPerPage(buf: Buffer, pageCount: number): Promise<string[]> {
+  const textos: string[] = new Array(pageCount).fill('');
+  try {
+    // El build legacy es el recomendado para entornos Node.js (evita dependencias de DOM)
+    const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    // El worker debe ser un módulo accesible; lo apuntamos al archivo local del paquete
+    const workerPath = path.resolve(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
+    GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href;
+    const pdf = await getDocument({ data: new Uint8Array(buf) }).promise;
+    for (let p = 1; p <= Math.min(pageCount, pdf.numPages); p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      textos[p - 1] = content.items
+        .map((it) => ('str' in it ? (it as { str: string }).str : ''))
+        .join(' ');
+      page.cleanup();
+    }
+    await pdf.destroy();
+  } catch (err) {
+    console.error('[upload/facturas] error al extraer texto del PDF:', err);
+  }
+  return textos;
 }
 
 const router = Router();
@@ -42,7 +62,10 @@ function resolverDirectorio(base: string, sub: string): string {
 function extraerNroFactura(texto: string, regex: string): string | null {
   try {
     const match = texto.match(new RegExp(regex, 'i'));
-    if (match?.[0]) return match[0].trim().replace(/\s+/g, '-');
+    if (match?.[0]) {
+      // Normalizar: quitar espacios alrededor del guión → "0065 - 00697045" → "0065-00697045"
+      return match[0].trim().replace(/\s*[-–—−]\s*/g, '-').replace(/\s+/g, '');
+    }
   } catch { /* regex inválido */ }
   return null;
 }
@@ -62,8 +85,8 @@ router.post('/facturas', upload.single('file'), async (req, res) => {
   if (!facturasBase) return res.status(400).json({ error: 'Directorio de facturas no configurado (ver Configuración)' });
 
   const regexPattern = MOCKS
-    ? String.raw`F[-\s]?\d{2,8}`
-    : (await dbGetValor('FACTURA_NRO_REGEX')) || String.raw`F[-\s]?\d{2,8}`;
+    ? String.raw`\d{4}\s*[-–—−]\s*\d{7,8}`
+    : (await dbGetValor('FACTURA_NRO_REGEX')) || String.raw`\d{4}\s*[-–—−]\s*\d{7,8}`;
 
   const outputDir = resolverDirectorio(facturasBase, '');
 
@@ -71,28 +94,22 @@ router.post('/facturas', upload.single('file'), async (req, res) => {
     const srcDoc = await PDFDocument.load(req.file.buffer);
     const pageCount = srcDoc.getPageCount();
 
+    // Extraer texto de cada página del PDF original antes de dividirlo.
+    const textosPorPagina = await getTextPerPage(req.file.buffer, pageCount);
+
     const resultados: { pagina: number; facturaNro: string; fileName: string }[] = [];
     const errores: { pagina: number; motivo: string }[] = [];
 
     for (let i = 0; i < pageCount; i++) {
       try {
-        // Crear un doc de una sola página
+        // Crear un doc de una sola página para guardar el archivo
         const singleDoc = await PDFDocument.create();
         const [page] = await singleDoc.copyPages(srcDoc, [i]);
         singleDoc.addPage(page);
         const pageBytes = await singleDoc.save();
 
-        // Extraer texto para obtener el número de factura
-        let facturaNro: string;
-        try {
-          const { PDFParse } = getPdfParseModule();
-          const parser = new PDFParse({ verbosity: 0 });
-          await parser.load(Buffer.from(pageBytes));
-          const text = await parser.getText();
-          facturaNro = extraerNroFactura(text, regexPattern) ?? `pagina-${i + 1}`;
-        } catch {
-          facturaNro = `pagina-${i + 1}`;
-        }
+        const text = textosPorPagina[i] ?? '';
+        const facturaNro = extraerNroFactura(text, regexPattern) ?? `pagina-${i + 1}`;
 
         const fileName = `${facturaNro}.pdf`;
         fs.writeFileSync(path.join(outputDir, fileName), Buffer.from(pageBytes));
