@@ -294,8 +294,8 @@ router.post('/enviar', async (req, res) => {
     const ecoResp = await trgsService.eco();
     logs.push({
       timestamp: now(), nivel: 'info', operacion: 'eco',
-      mensaje: ecoResp.respuestaID === 1 ? 'Servidor TRGS disponible' : 'Servidor TRGS no disponible',
-      detalle: `respuestaID: ${ecoResp.respuestaID}`,
+      mensaje: ecoResp.trgDisponible === 1 ? 'Servidor TRGS disponible' : 'Servidor TRGS no disponible',
+      detalle: `trgDisponible: ${ecoResp.trgDisponible} — v${ecoResp.trgVersionWS} — ${ecoResp.trgMessage}`,
     });
 
     const sesionResp = await trgsService.abrirSesion();

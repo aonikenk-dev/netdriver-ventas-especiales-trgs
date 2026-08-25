@@ -1,0 +1,1371 @@
+{
+  "trgs": {
+    "trgsPort": {
+      "eco": {
+        "input": null,
+        "output": {
+          "return": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "trgDisponible",
+                    "$type": "xsd:int",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "trgVersionProtocol",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "trgVersionWS",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "trgMessage",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgEco",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        }
+      },
+      "abrir_sesion": {
+        "input": {
+          "uswID": "xsd:unsignedLong",
+          "uswPassword": "xsd:string",
+          "uswHash": "xsd:string"
+        },
+        "output": {
+          "return": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "rspID",
+                    "$type": "xsd:int",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "rspDescrip",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "ingID",
+                    "$type": "xsd:unsignedLong",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "sesID",
+                    "$type": "xsd:token",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "ingFecVen",
+                    "$type": "xsd:duration",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgAbrirSesion",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        }
+      },
+      "cerrar_sesion": {
+        "input": {
+          "uswID": "xsd:unsignedLong",
+          "ingID": "xsd:unsignedLong"
+        },
+        "output": {
+          "return": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "rspID",
+                    "$type": "xsd:int",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "rspDescrip",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "ingID",
+                    "$type": "xsd:unsignedLong",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "ingFecSal",
+                    "$type": "xsd:dateTime",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgCerrarSesion",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        }
+      },
+      "generar_tramite_01": {
+        "input": {
+          "uswID": "xsd:unsignedLong",
+          "ingID": "xsd:unsignedLong",
+          "datos": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosDelTramite",
+                    "$type": "tns:trgDatos",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosTitulares",
+                    "$type": "tns:trgArrayTitularesTramites",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosVehiculo",
+                    "$type": "tns:trgVehiculo",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosCedulasAzul",
+                    "$type": "tns:trgArrayCedulaAzul",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosApoderados",
+                    "$type": "tns:trgArrayApoderados",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosTitularesDJApoderados",
+                    "$type": "tns:trgArrayTitularesDJApoderados",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosGuardaHabitual",
+                    "$type": "tns:trgGuardaHabitual",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "datosPrestamo",
+                    "$type": "tns:trgDatosPrestamo",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgDatosTramite",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        },
+        "output": {
+          "return": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "rspID",
+                    "$type": "xsd:int",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "rspDescrip",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "traID",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgGenerarTramite",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        }
+      },
+      "obtener_formularios": {
+        "input": {
+          "uswID": "xsd:unsignedLong",
+          "ingID": "xsd:unsignedLong",
+          "F12": "xsd:boolean",
+          "nroForm": "xsd:unsignedLong",
+          "nroTramite": "xsd:unsignedLong"
+        },
+        "output": {
+          "return": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "codMensaje",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "Descripcion",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "formulario",
+                    "$type": "tns:trgFormularios",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgRtaFormularios",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        }
+      },
+      "obtener_formularios_dnrpa": {
+        "input": {
+          "uswID": "xsd:unsignedLong",
+          "ingID": "xsd:unsignedLong",
+          "tipoVehiculo": "xsd:string",
+          "nroCertificado": "xsd:string",
+          "origen": "xsd:string"
+        },
+        "output": {
+          "return": {
+            "allowedChildren": {},
+            "children": [
+              {
+                "allowedChildren": {},
+                "children": [
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "codMensaje",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "Descripcion",
+                    "$type": "xsd:string",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  },
+                  {
+                    "allowedChildren": {},
+                    "children": [],
+                    "nsName": "xsd:element",
+                    "prefix": "xsd",
+                    "name": "element",
+                    "xmlns": {},
+                    "schemaXmlns": {},
+                    "valueKey": "$value",
+                    "xmlKey": "$xml",
+                    "ignoredNamespaces": [
+                      "tns",
+                      "targetNamespace",
+                      "typedNamespace"
+                    ],
+                    "strict": false,
+                    "forceUseSchemaXmlns": false,
+                    "$name": "formulario",
+                    "$type": "tns:trgFormularios",
+                    "definitionsXmlns": {
+                      "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                      "xsd": "http://www.w3.org/2001/XMLSchema",
+                      "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                      "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                      "tns": "urn:trgs",
+                      "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                      "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                      "__tns__": "urn:trgs"
+                    }
+                  }
+                ],
+                "nsName": "xsd:all",
+                "prefix": "xsd",
+                "name": "all",
+                "xmlns": {},
+                "schemaXmlns": {},
+                "valueKey": "$value",
+                "xmlKey": "$xml",
+                "ignoredNamespaces": [
+                  "tns",
+                  "targetNamespace",
+                  "typedNamespace"
+                ],
+                "strict": false,
+                "forceUseSchemaXmlns": false,
+                "definitionsXmlns": {
+                  "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+                  "xsd": "http://www.w3.org/2001/XMLSchema",
+                  "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                  "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+                  "tns": "urn:trgs",
+                  "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+                  "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+                  "__tns__": "urn:trgs"
+                }
+              }
+            ],
+            "nsName": "xsd:complexType",
+            "prefix": "tns",
+            "name": "complexType",
+            "xmlns": "urn:trgs",
+            "schemaXmlns": {},
+            "valueKey": "$value",
+            "xmlKey": "$xml",
+            "ignoredNamespaces": [
+              "tns",
+              "targetNamespace",
+              "typedNamespace"
+            ],
+            "strict": false,
+            "forceUseSchemaXmlns": false,
+            "$name": "trgRtaFormularios",
+            "definitionsXmlns": {
+              "SOAP-ENV": "http://schemas.xmlsoap.org/soap/envelope/",
+              "xsd": "http://www.w3.org/2001/XMLSchema",
+              "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+              "SOAP-ENC": "http://schemas.xmlsoap.org/soap/encoding/",
+              "tns": "urn:trgs",
+              "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
+              "wsdl": "http://schemas.xmlsoap.org/wsdl/",
+              "__tns__": "urn:trgs"
+            }
+          }
+        }
+      }
+    }
+  }
+}
