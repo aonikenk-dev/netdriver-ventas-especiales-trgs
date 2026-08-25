@@ -143,8 +143,11 @@ export interface TrgRespuesta {
   rspDescrip: string;
 }
 
-export interface TrgEcoRespuesta extends TrgRespuesta {
-  respuestaID: number;
+export interface TrgEcoRespuesta {
+  trgDisponible: number;       // 1 = disponible
+  trgVersionProtocol: string;
+  trgVersionWS: string;
+  trgMessage: string;
 }
 
 export interface TrgSesionRespuesta extends TrgRespuesta {
