@@ -30,5 +30,5 @@ app.use('/api/configuracion', configuracionRouter);
 app.use('/api/upload', uploadRouter);
 
 app.listen(PORT, () => {
-  console.log(`Backend (mock) escuchando en http://localhost:${PORT}`);
+  console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
