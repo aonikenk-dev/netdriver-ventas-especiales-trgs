@@ -1,67 +1,66 @@
-// Construye el payload completo para generar_tramite_01 desde un GestorTramite.
-// Los campos que no están disponibles en nuestro esquema simplificado se envían
-// como strings vacíos; el WS responderá con el rspID correspondiente si son requeridos.
+// Construye el payload para generar_tramite_01 del WS SOAP de TRGS.
 
 import type { GestorTramite } from '../../../shared/types/index.js';
 
-// ─── Tipos del payload ────────────────────────────────────────────────────────
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 
 interface TrgTitular {
-  frmID: string;
-  traTT: string;
-  tdcID: string;
-  traDocumento: number;
-  traSexo: string;
-  emdID: number;
-  nacID: number;
-  traCuit: number;
-  traNombre: string;
-  traApellido: string;
-  traPorcentaje: number;
-  traFecNac: string;
-  escID: string;
-  traNupcias: string;
-  tdcID_C: string;
-  traDocumento_C: string;
-  traNombre_C: string;
-  traApellido_C: string;
-  traPersoneria_C: string;
-  traNumero_C: string;
-  traFecCre_C: string;
-  traEmail: string;
-  traOcupacion: string;
-  traTelefono: string;
+  frmID:              string;
+  traTT:              string;
+  tdcID:              number;
+  traDocumento:       number;
+  traSexo:            string;
+  emdID:              number;
+  nacID:              number;
+  traCuit:            number;
+  traNombre:          string;
+  traApellido:        string;
+  traPorcentaje:      number;
+  traFecNac:          string;
+  escID:              string;
+  traNupcias:         string;
+  tdcID_C:            string;
+  traDocumento_C:     string;
+  traNombre_C:        string;
+  traApellido_C:      string;
+  traPersoneria_C:    string;
+  traNumero_C:        string;
+  traFecCre_C:        string;
+  traEmail:           string;
+  traOcupacion:       string;
+  traTelefono:        string;
   traLugarNacimiento: string;
-  traCalle: string;
-  traNumero: string;
-  traPiso: string;
-  traDpto: string;
-  traCP: string;
-  traLocalidad: string;
-  traBarrio: string;
-  zonID: string;
-  traMunicipalidad: string;
-  traCalle_R: string;
-  traNumero_R: string;
-  traPiso_R: string;
-  traDpto_R: string;
-  traCP_R: string;
-  traLocalidad_R: string;
-  traBarrio_R: string;
-  zonID_R: string;
+  traCalle:           string;
+  traNumero:          string;
+  traPiso:            string;
+  traDpto:            string;
+  traCP:              string;
+  traLocalidad:       string;
+  traBarrio:          string;
+  zonID:              string;
+  traMunicipalidad:   string;
+  traCalle_R:         string;
+  traNumero_R:        string;
+  traPiso_R:          string;
+  traDpto_R:          string;
+  traCP_R:            string;
+  traLocalidad_R:     string;
+  traBarrio_R:        string;
+  zonID_R:            string;
   traMunicipalidad_R: string;
 }
 
 export interface TrgPayload {
-  datosDelTramite: Record<string, unknown>;
-  datosTitulares: { trgArrayTitularesTramites: TrgTitular };
-  datosVehiculo: { cerID: string; cerNumeroCC: string; cerTipo: string };
-  datosCedulasAzul: Record<string, unknown>;
-  datosApoderados: Record<string, unknown>;
+  datosDelTramite:           Record<string, unknown>;
+  // SOAP: objeto con wrapper trgArrayTitularesTramites (no array JS)
+  datosTitulares:            { trgArrayTitularesTramites: TrgTitular };
+  datosVehiculo:             { cerID: string; cerNumeroCC: string; cerTipo: string };
+  datosCedulasAzul:          Record<string, unknown>;
+  datosApoderados:           Record<string, unknown>;
   datosTitularesDJApoderados: Record<string, unknown>;
-  datosGuardaHabitual: Record<string, unknown>;
-  datosPrestamo: Record<string, unknown>;
-  datosAutopartes: { formaPago: string };
+  datosGuardaHabitual:       Record<string, unknown>;
+  datosPrestamo:             Record<string, unknown>;
+  datosAutopartes:           { formaPago: string };
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -72,15 +71,26 @@ function cuitNumerico(cuit: string): number {
 
 function dniDesdeCuit(cuit: string): number {
   const soloNums = cuit.replace(/-/g, '');
-  // CUIT: XX + 8 dígitos DNI + D → extraer posiciones 2..9
   if (soloNums.length >= 10) return parseInt(soloNums.slice(2, 10), 10) || 0;
   return cuitNumerico(cuit);
 }
 
-// Divide "APELLIDO NOMBRE" o "APELLIDO, NOMBRE" en apellido y nombre.
-// La lógica es best-effort: en Argentina los DB suelen venir "APELLIDO NOMBRE".
-function splitNombreApellido(nombreCompleto: string): { nombre: string; apellido: string } {
+// Determina si el titular es persona jurídica chequeando el CUIT (30/33/34)
+// además del idTipoPersona, porque la DB puede traer el valor incorrecto.
+function esPersonaJuridica(cuit: string, idTipoPersona: number): boolean {
+  if (idTipoPersona === 0) return true;
+  const digits = cuit.replace(/-/g, '');
+  return digits.startsWith('30') || digits.startsWith('33') || digits.startsWith('34');
+}
+
+// Para persona física: divide "APELLIDO NOMBRE" o "APELLIDO, NOMBRE".
+// Para persona jurídica: razón social completa va en traApellido.
+function resolverNombreApellido(
+  nombreCompleto: string,
+  esPJ: boolean,
+): { nombre: string; apellido: string } {
   const limpio = nombreCompleto.trim().toUpperCase();
+  if (esPJ) return { apellido: limpio, nombre: '' };
   if (limpio.includes(',')) {
     const [ap, nm] = limpio.split(',', 2);
     return { apellido: ap.trim(), nombre: nm.trim() };
@@ -90,43 +100,29 @@ function splitNombreApellido(nombreCompleto: string): { nombre: string; apellido
   return { apellido: partes[0], nombre: partes.slice(1).join(' ') };
 }
 
-// Parsea el nroFactura (ej. "B0065-00127868" o "0065-00127868") en sus partes.
-// Retorna defaults si el formato no es reconocible.
+// Parsea facturaNro (ej. "A0065 - 00697780") en sus componentes para el WS.
 function parsearFactura(facturaNro: string): {
-  ticID: string;
-  codigoPuntoVenta: string;
-  elpFacNum: string;
+  ticID: string; codigoPuntoVenta: string; elpFacNum: string;
 } {
   const s = facturaNro.trim().toUpperCase().replace(/\s+/g, '');
-
-  // Intentar "L####-########" o "L #### ########" o "####-########"
-  const match = s.match(/^([A-Z]?)(\d{1,4})[-\s]?(\d{4,8})$/);
+  const match = s.match(/^([A-Z]?)(\d{1,4})[-]?(\d{4,8})$/);
   if (match) {
-    const letra = match[1];
-    const pventa = match[2].padStart(4, '0');
-    const nro = match[3].padStart(8, '0');
-    const ticID = { A: '01', B: '06', C: '11', M: '51', X: '06' }[letra] ?? '06';
-    return { ticID, codigoPuntoVenta: pventa, elpFacNum: nro };
+    const ticID = { A: '01', B: '06', C: '11', M: '51', X: '06' }[match[1]] ?? '06';
+    return { ticID, codigoPuntoVenta: match[2].padStart(4, '0'), elpFacNum: match[3].padStart(8, '0') };
   }
-
-  // Formato largo "B 0065 00127868" (sin guion)
   const match2 = s.match(/^([A-Z]?)(\d{4})(\d{8})$/);
   if (match2) {
-    const letra = match2[1];
-    const ticID = { A: '01', B: '06', C: '11', M: '51', X: '06' }[letra] ?? '06';
+    const ticID = { A: '01', B: '06', C: '11', M: '51', X: '06' }[match2[1]] ?? '06';
     return { ticID, codigoPuntoVenta: match2[2], elpFacNum: match2[3] };
   }
-
-  // Fallback: enviar el número como elpFacNum sin parsear
   return { ticID: '06', codigoPuntoVenta: '0001', elpFacNum: s.slice(-8).padStart(8, '0') };
 }
 
-// Normaliza una fecha a "YYYY-MM-DD". Acepta "DD/MM/YYYY" o ISO.
 function normalizarFecha(fecha: string): string {
   if (!fecha) return '';
   const dmY = fecha.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
   if (dmY) return `${dmY[3]}-${dmY[2].padStart(2, '0')}-${dmY[1].padStart(2, '0')}`;
-  return fecha.slice(0, 10); // ISO slice
+  return fecha.slice(0, 10);
 }
 
 // ─── Constructor principal ────────────────────────────────────────────────────
@@ -137,22 +133,28 @@ export function buildTrgPayload(
   formulario12: string,
 ): TrgPayload {
   const { auto, titular } = tramite;
-  const { apellido, nombre } = splitNombreApellido(titular.nombre);
+  const esPJ = esPersonaJuridica(titular.cuit, titular.idTipoPersona);
   const cuitNum = cuitNumerico(titular.cuit);
   const dniNum  = dniDesdeCuit(titular.cuit);
+  const { apellido, nombre } = resolverNombreApellido(titular.nombre, esPJ);
+
+  // traSexo: P = persona jurídica, F = mujer (CUIT 27x), M = varón (resto)
+  const cuitDigits = titular.cuit.replace(/-/g, '');
+  const sexo = esPJ ? 'P' : (cuitDigits.startsWith('27') ? 'F' : 'M');
+
   const { ticID, codigoPuntoVenta, elpFacNum } = parsearFactura(auto.facturaNro ?? '');
 
   const titularPayload: TrgTitular = {
     frmID:            formulario01,
     traTT:            'P',
-    tdcID:            titular.idTipoPersona === 0 ? '0' : '9',
-    traDocumento:     titular.idTipoPersona === 0 ? cuitNum : dniNum,
-    traSexo:          '',
+    tdcID:            esPJ ? 0 : 9,
+    traDocumento:     esPJ ? cuitNum : dniNum,
+    traSexo:          sexo,
     emdID:            3,    // Argentina
     nacID:            200,  // Argentina
     traCuit:          cuitNum,
-    traNombre:        nombre || apellido,
-    traApellido:      nombre ? apellido : '',
+    traNombre:        nombre,
+    traApellido:      apellido,
     traPorcentaje:    100,
     traFecNac:        '',
     escID:            '',
@@ -192,12 +194,12 @@ export function buildTrgPayload(
     datosDelTramite: {
       ttrID:                  4,     // compraventa
       frmID_12:               formulario12,
-      traAnio:                auto.ano ?? '',
-      traTipoUso:             1,     // particular (constante)
-      traCedulas:             0,     // sin cédulas azul adicionales
+      traAnio:                parseInt(auto.ano ?? '0', 10) || '',
+      traTipoUso:             1,     // particular
+      traCedulas:             0,
       traGestoria:            'S',
       traGuardaHabitual:      'N',
-      traModoAdquisicion:     'P',   // compra
+      traModoAdquisicion:     'P',
       traElementoProbatorio:  '',
       traEP_Opcional:         '',
       ticID,
@@ -222,31 +224,30 @@ export function buildTrgPayload(
       traFecComSegundo:       '',
     },
 
+    // SOAP requiere el wrapper trgArrayTitularesTramites, no un array JS directo
     datosTitulares: {
       trgArrayTitularesTramites: titularPayload,
     },
 
     datosVehiculo: {
-      cerID:      auto.certificadoFabrica ?? '',
-      cerNumeroCC: auto.codFabrica ?? '',
-      cerTipo:    'F',
+      cerID:       auto.certificadoFabrica ?? '',
+      cerNumeroCC: auto.nroChasis ?? '',
+      // F = Fábrica/nacional (chasis empieza en '8'), I = Importado
+      cerTipo: auto.codigoClase === 6801 ? 'F' : 'I',
     },
 
-    // Sin cédulas azul en este sistema simplificado
-    datosCedulasAzul: {},
-
-    // Sin apoderados por defecto (VE_apoderados se verifica en la ruta de envío)
-    datosApoderados: {},
+    datosCedulasAzul:           {},
+    datosApoderados:            {},
     datosTitularesDJApoderados: {},
 
     datosGuardaHabitual: {
-      ghCalle:        '',
-      ghNumero:       '',
-      ghCP:           '1',
-      ghLocalidad:    '',
-      zonID:          '',
+      ghCalle:         '',
+      ghNumero:        '',
+      ghCP:            '1',
+      ghLocalidad:     '',
+      zonID:           '',
       ghMunicipalidad: '',
-      ghBarrio:       '',
+      ghBarrio:        '',
     },
 
     datosPrestamo: {

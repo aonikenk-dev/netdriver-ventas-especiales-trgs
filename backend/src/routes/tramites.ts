@@ -309,7 +309,7 @@ router.post('/enviar', async (req, res) => {
       detalle: `rspID: ${sesionResp.rspID} — ${sesionResp.rspDescrip}`,
     });
 
-    const { ingID } = sesionResp;
+    const { ingID, accessToken } = sesionResp;
 
     try {
       const payload = buildTrgPayload(
@@ -317,7 +317,7 @@ router.post('/enviar', async (req, res) => {
         tramite.formularioNro01 ?? '',
         tramite.formularioNro12 ?? '',
       );
-      const respuesta = await trgsService.generarTramite01(ingID, payload);
+      const respuesta = await trgsService.generarTramite01(ingID, accessToken, payload);
 
       if (respuesta.rspID === 1) {
         if (MOCKS) {
@@ -343,7 +343,7 @@ router.post('/enviar', async (req, res) => {
           const nroForm = tipo === 'F12'
             ? (tramite.formularioNro12 ?? '')
             : (tramite.formularioNro01 ?? '');
-          const f = await trgsService.obtenerFormularios(ingID, respuesta.traID, tipo, nroForm);
+          const f = await trgsService.obtenerFormularios(accessToken, respuesta.traID, tipo, nroForm);
           formularios.push(f);
         }
 
@@ -372,7 +372,7 @@ router.post('/enviar', async (req, res) => {
         });
       }
     } finally {
-      await trgsService.cerrarSesion(ingID);
+      await trgsService.cerrarSesion(accessToken);
       logs.push({ timestamp: now(), nivel: 'info', operacion: 'cerrar_sesion', mensaje: 'Sesión cerrada' });
     }
 

@@ -1,29 +1,23 @@
 /**
- * Script de diagnóstico para el WS TRGS.
+ * Script de diagnóstico para el WS TRGS (SOAP).
  * Ejecutar desde la carpeta backend/:
  *
  *   npx tsx scripts/test-trgs.ts
  *
  * Carga el .env automáticamente y ejecuta tres pruebas en orden:
- *   1. Descarga del WSDL (TLS + HTTP Basic Auth)
- *   2. eco()            (disponibilidad del servidor TRGS)
+ *   1. Descarga del WSDL (TLS + autenticación)
+ *   2. eco()             (disponibilidad del servidor)
  *   3. abrir_sesion()   (validez de las credenciales SOAP)
  */
 
 import 'dotenv/config';
 
-// El cert de www.trgs.com.ar está emitido para *.suats.com.ar (mismatch de hostname).
-// Se deshabilita la verificación TLS a nivel de proceso — único mecanismo confiable
-// cuando node-soap no propaga el agente personalizado al fetch del WSDL.
+// El cert está emitido para *.suats.com.ar — servicehabitualistas.suats.com.ar coincide.
+// Se mantiene el bypass por si el entorno de testing usa cert diferente.
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-import fs from 'node:fs';
 import https from 'node:https';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createRequire } from 'module';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const _require = createRequire(import.meta.url);
 
@@ -38,14 +32,14 @@ function log(icon: string, label: string, detail?: unknown) {
   console.log(`${icon} ${label}${d}`);
 }
 
-// ── configuración desde .env ──────────────────────────────────────────────────
+// ── configuración ─────────────────────────────────────────────────────────────
 
-const WSDL_URL   = process.env.TRGS_URL ?? 'https://www.trgs.com.ar:443/service/index.php?wsdl';
-const HTTP_USER  = process.env.TRGS_HTTP_USER  ?? '';
-const HTTP_PASS  = process.env.TRGS_HTTP_PASS  ?? '';
-const USW_ID     = process.env.TRGS_USW_ID     ?? '000005';
-const USW_PASS   = process.env.TRGS_USW_PASSWORD ?? '';
-const USW_HASH   = process.env.TRGS_USW_HASH   ?? '';
+const WSDL_URL  = process.env.TRGS_URL ?? 'https://servicehabitualistas.suats.com.ar/service/index.php?wsdl';
+const HTTP_USER = process.env.TRGS_HTTP_USER  ?? '';
+const HTTP_PASS = process.env.TRGS_HTTP_PASS  ?? '';
+const USW_ID    = process.env.TRGS_USW_ID     ?? '000005';
+const USW_PASS  = process.env.TRGS_USW_PASSWORD ?? '';
+const USW_HASH  = process.env.TRGS_USW_HASH   ?? '';
 
 console.log('\n── Configuración leída del .env ─────────────────────────────');
 console.log(`${INFO} WSDL URL:      ${WSDL_URL}`);
@@ -56,15 +50,12 @@ console.log(`${INFO} USW_PASSWORD:  ${USW_PASS ? '***' : '(vacío)'}`);
 console.log(`${INFO} USW_HASH:      ${USW_HASH ? '***' : '(vacío)'}`);
 console.log('');
 
-// ── agente HTTPS sin verificación de hostname ─────────────────────────────────
-// El cert de www.trgs.com.ar está emitido para *.suats.com.ar (mismatch conocido).
-
 const agent = new https.Agent({ rejectUnauthorized: false });
 
 type SoapClient = {
   abrir_sesionAsync(a: {
     uswID: string; uswPassword: string; uswHash: string;
-  }): Promise<[{ return: { rspID: number; ingID: string; rspDescrip: string } }]>;
+  }): Promise<[{ return: Record<string, unknown> }]>;
   cerrar_sesionAsync(a: { uswID: string; ingID: string }): Promise<unknown>;
   setSecurity(s: unknown): void;
   httpClient?: {
@@ -83,15 +74,13 @@ async function testWsdl(): Promise<SoapClient | null> {
     };
 
     const client = await soap.createClientAsync(WSDL_URL, {
-      wsdl_options: {
-        auth:                `${HTTP_USER}:${HTTP_PASS}`,
-        rejectUnauthorized:  false,
-        agent,
-      },
+      wsdl_options: { rejectUnauthorized: false, agent },
     });
-    client.setSecurity(new soap.BasicAuthSecurity(HTTP_USER, HTTP_PASS));
 
-    // Inyectar agente en llamadas SOAP
+    if (HTTP_USER && HTTP_PASS) {
+      client.setSecurity(new soap.BasicAuthSecurity(HTTP_USER, HTTP_PASS));
+    }
+
     if (client.httpClient?.request) {
       const orig = client.httpClient.request.bind(client.httpClient);
       client.httpClient.request = (url, data, cb, headers, opts) =>
@@ -102,58 +91,38 @@ async function testWsdl(): Promise<SoapClient | null> {
     return client;
   } catch (err) {
     log(FAIL, 'No se pudo descargar el WSDL', (err as Error).message);
-    console.log('');
-    console.log('  Posibles causas:');
-    console.log('  · El servidor no es alcanzable (red / firewall)');
-    console.log('  · HTTP Basic Auth incorrecto (TRGS_HTTP_USER / TRGS_HTTP_PASS)');
-    console.log('  · Error TLS distinto al del hostname mismatch');
     return null;
   }
 }
 
-// ── eco() via raw HTTPS ───────────────────────────────────────────────────────
-// eco() tiene input:null en el WSDL — node-soap no puede serializar el request.
-// Se llama directamente con https para evitar la capa de serialización.
+// ── prueba 2: eco() via raw HTTPS ─────────────────────────────────────────────
 
-function ecoRaw(wsdlUrl: string): Promise<{ trgDisponible: number; trgVersionProtocol: string; trgVersionWS: string; trgMessage: string }> {
-  const base = wsdlUrl.replace('?wsdl', '');
-  const auth = Buffer.from(`${HTTP_USER}:${HTTP_PASS}`).toString('base64');
+function ecoRaw(): Promise<{ trgDisponible: number; trgVersionWS: string; trgMessage: string }> {
+  const base = WSDL_URL.replace('?wsdl', '');
   const envelope =
     '<?xml version="1.0" encoding="utf-8"?>' +
     '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="urn:trgs">' +
     '<SOAP-ENV:Body><tns:eco/></SOAP-ENV:Body>' +
     '</SOAP-ENV:Envelope>';
+  const headers: Record<string, string | number> = {
+    'Content-Type':   'text/xml; charset=utf-8',
+    'SOAPAction':     '""',
+    'Content-Length': Buffer.byteLength(envelope),
+  };
+  if (HTTP_USER && HTTP_PASS) {
+    headers['Authorization'] = `Basic ${Buffer.from(`${HTTP_USER}:${HTTP_PASS}`).toString('base64')}`;
+  }
   const url = new URL(base);
   return new Promise((resolve, reject) => {
     const req = https.request(
-      {
-        hostname: url.hostname,
-        port:     Number(url.port) || 443,
-        path:     url.pathname + url.search,
-        method:   'POST',
-        headers: {
-          'Content-Type':   'text/xml; charset=utf-8',
-          'SOAPAction':     '""',
-          'Authorization':  `Basic ${auth}`,
-          'Content-Length': Buffer.byteLength(envelope),
-        },
-      },
+      { hostname: url.hostname, port: Number(url.port) || 443, path: url.pathname, method: 'POST', headers, agent },
       (res) => {
         let body = '';
-        res.on('data', (chunk: Buffer) => { body += chunk; });
+        res.on('data', (c: Buffer) => { body += c; });
         res.on('end', () => {
           const tag = (name: string) =>
             body.match(new RegExp(`<(?:[^:>]+:)?${name}[^>]*>(.*?)<\\/(?:[^:>]+:)?${name}>`, 's'))?.[1]?.trim() ?? '';
-          console.log('  Raw response HTTP status:', res.statusCode);
-          if (!body.includes('trgDisponible')) {
-            console.log('  Raw response body (primeros 500 chars):', body.slice(0, 500));
-          }
-          resolve({
-            trgDisponible:      parseInt(tag('trgDisponible')) || 0,
-            trgVersionProtocol: tag('trgVersionProtocol'),
-            trgVersionWS:       tag('trgVersionWS'),
-            trgMessage:         tag('trgMessage'),
-          });
+          resolve({ trgDisponible: parseInt(tag('trgDisponible')) || 0, trgVersionWS: tag('trgVersionWS'), trgMessage: tag('trgMessage') });
         });
       }
     );
@@ -163,19 +132,16 @@ function ecoRaw(wsdlUrl: string): Promise<{ trgDisponible: number; trgVersionPro
   });
 }
 
-// ── prueba 2: eco() ───────────────────────────────────────────────────────────
-
-async function testEco(_client: SoapClient): Promise<boolean> {
+async function testEco(): Promise<boolean> {
   console.log('\n── Prueba 2: eco() (raw HTTPS) ──────────────────────────────');
   try {
-    const r = await ecoRaw(WSDL_URL);
+    const r = await ecoRaw();
     if (r.trgDisponible === 1) {
-      log(OK, `Servidor TRGS disponible — versión WS: ${r.trgVersionWS}  mensaje: "${r.trgMessage}"`);
+      log(OK, `Servidor disponible — v${r.trgVersionWS}  mensaje: "${r.trgMessage}"`);
       return true;
-    } else {
-      log(FAIL, `eco() respondió trgDisponible=${r.trgDisponible}  mensaje="${r.trgMessage}"`);
-      return false;
     }
+    log(FAIL, `trgDisponible=${r.trgDisponible}  mensaje="${r.trgMessage}"`);
+    return false;
   } catch (err) {
     log(FAIL, 'eco() lanzó excepción', (err as Error).message);
     return false;
@@ -184,57 +150,36 @@ async function testEco(_client: SoapClient): Promise<boolean> {
 
 // ── prueba 3: abrir_sesion() ──────────────────────────────────────────────────
 
+function unpack(v: unknown): unknown {
+  if (v !== null && typeof v === 'object' && '$value' in (v as Record<string, unknown>))
+    return (v as Record<string, unknown>)['$value'];
+  return v;
+}
+
 async function testAbrirSesion(client: SoapClient): Promise<void> {
   console.log('\n── Prueba 3: abrir_sesion() ─────────────────────────────────');
-
-  if (!USW_PASS || !USW_HASH) {
-    log(FAIL, 'TRGS_USW_PASSWORD o TRGS_USW_HASH están vacíos en el .env — abortando prueba');
+  if (!USW_PASS && !USW_HASH) {
+    log(FAIL, 'TRGS_USW_PASSWORD y TRGS_USW_HASH están vacíos — abortando');
     return;
   }
 
   let ingID = '';
   try {
-    const result = await client.abrir_sesionAsync({
-      uswID:       USW_ID,
-      uswPassword: USW_PASS,
-      uswHash:     USW_HASH,
-    });
-    // Volcar estructura completa para entender el formato de respuesta de node-soap
-    console.log('  Respuesta raw:', JSON.stringify(result, null, 2));
-
-    const [rta] = result;
+    const [rta] = await client.abrir_sesionAsync({ uswID: USW_ID, uswPassword: USW_PASS, uswHash: USW_HASH });
     const r = rta.return;
-
-    // node-soap a veces envuelve primitivos en objetos con clave '$value' o '_'
-    const extractVal = (v: unknown): string | number => {
-      if (v === null || v === undefined) return '';
-      if (typeof v === 'object') {
-        const obj = v as Record<string, unknown>;
-        return (obj['$value'] ?? obj['_'] ?? JSON.stringify(v)) as string | number;
-      }
-      return v as string | number;
-    };
-
-    const rspID   = Number(extractVal(r.rspID));
-    const ingIDVal = String(extractVal(r.ingID));
+    const rspID = Number(unpack(r.rspID));
+    ingID = String(unpack(r.ingID) ?? '');
 
     if (rspID === 1) {
-      ingID = ingIDVal;
       log(OK, `Sesión abierta — ingID="${ingID}"`);
     } else {
-      log(FAIL, `abrir_sesion() rechazada — rspID=${rspID}  rspDescrip="${extractVal(r.rspDescrip)}"`);
-      console.log('');
-      console.log('  Posibles causas:');
-      console.log('  · TRGS_USW_PASSWORD incorrecto');
-      console.log('  · TRGS_USW_HASH incorrecto o expirado');
-      console.log('  · TRGS_USW_ID no registrado en el servidor');
+      log(FAIL, `rspID=${rspID}  rspDescrip="${unpack(r.rspDescrip)}"`);
     }
   } catch (err) {
     log(FAIL, 'abrir_sesion() lanzó excepción', (err as Error).message);
     return;
   }
 
-  // cerrar_sesion siempre, incluso si hubo error
   if (ingID) {
     try {
       await client.cerrar_sesionAsync({ uswID: USW_ID, ingID });
@@ -249,16 +194,10 @@ async function testAbrirSesion(client: SoapClient): Promise<void> {
 
 (async () => {
   const client = await testWsdl();
-  if (!client) {
-    console.log('\nDetenido en prueba 1. Corrija el problema antes de continuar.\n');
-    process.exit(1);
-  }
+  if (!client) { process.exit(1); }
 
-  const ecoOk = await testEco(client);
-  if (!ecoOk) {
-    console.log('\nDetenido en prueba 2. El servidor no responde correctamente.\n');
-    process.exit(1);
-  }
+  const ecoOk = await testEco();
+  if (!ecoOk) { process.exit(1); }
 
   await testAbrirSesion(client);
 
