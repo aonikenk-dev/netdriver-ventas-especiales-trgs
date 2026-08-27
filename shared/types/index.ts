@@ -152,6 +152,7 @@ export interface TrgEcoRespuesta {
 
 export interface TrgSesionRespuesta extends TrgRespuesta {
   ingID: string;
+  accessToken: string; // Bearer token para la API REST
 }
 
 export interface TrgTramiteRespuesta extends TrgRespuesta {
