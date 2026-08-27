@@ -421,22 +421,4 @@ El script `find-api-path.ts` sirve para explorar endpoints en caso de cambio de 
 
 ---
 
-## Estimación
-
-| Área | Horas |
-|---|---|
-| Backend — Node.js | 78 hs |
-| Frontend — React | 58 hs |
-| QA + UAT | 37 hs |
-| Infra / Deploy | 17 hs |
-| **Total** | **190 – 210 hs** |
-
----
-
-## Estado del proyecto
-
-Ver [GitHub Projects → Kanban](https://github.com/orgs/aonikenk-dev/projects/3/views/1) para el estado actual de las tareas por épica.
-
----
-
 *Desarrollado por [aonikenk.dev](https://aonikenk.dev) · Software · Branding · Solutions · Patagonia, Argentina*
