@@ -1,4 +1,5 @@
-import { FileDown, FileSpreadsheet } from 'lucide-react';
+import { useState } from 'react';
+import { FileDown, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,6 +17,9 @@ interface Props {
 }
 
 export function ModalRemito({ remito, onClose }: Props) {
+  const [loadingPdf, setLoadingPdf]   = useState(false);
+  const [loadingXlsx, setLoadingXlsx] = useState(false);
+
   if (!remito) return null;
 
   const apiBase = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
@@ -26,6 +30,31 @@ export function ModalRemito({ remito, onClose }: Props) {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  async function abrirArchivo(
+    url: string,
+    setLoading: (v: boolean) => void,
+    filename: string,
+  ) {
+    if (!url) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}${url}`);
+      if (!res.ok) throw new Error(`Error ${res.status} al obtener el archivo`);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.target = '_blank';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo abrir el archivo');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Dialog open={!!remito} onOpenChange={onClose}>
@@ -73,17 +102,29 @@ export function ModalRemito({ remito, onClose }: Props) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.open(`${apiBase}${remito.excelUrl}`, '_blank')}
+            disabled={!remito.excelUrl || loadingXlsx}
+            title={!remito.excelUrl ? 'Cierre el remito para generar el Excel' : undefined}
+            onClick={() => abrirArchivo(
+              remito.excelUrl,
+              setLoadingXlsx,
+              `RTO-${remito.nroRemito}.xlsx`,
+            )}
           >
-            <FileSpreadsheet size={13} />
+            {loadingXlsx ? <Loader2 size={13} className="animate-spin" /> : <FileSpreadsheet size={13} />}
             Excel
           </Button>
           <Button
             variant="default"
             size="sm"
-            onClick={() => window.open(`${apiBase}${remito.pdfUrl}`, '_blank')}
+            disabled={!remito.pdfUrl || loadingPdf}
+            title={!remito.pdfUrl ? 'Cierre el remito para generar el PDF' : undefined}
+            onClick={() => abrirArchivo(
+              remito.pdfUrl,
+              setLoadingPdf,
+              `RTO-${remito.nroRemito}.pdf`,
+            )}
           >
-            <FileDown size={13} />
+            {loadingPdf ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
             PDF
           </Button>
         </div>
